@@ -20,7 +20,7 @@ web = [
   "python-multipart>=0.0.20,<1",
   "typer>=0.15,<1",
   "uvicorn[standard]>=0.34,<1",
-  "zymeforge @ git+ssh://git@github.com/Gabriel-QIN/ZymeForge.git",
+  "zymeforge @ git+https://github.com/Gabriel-QIN/ZymeForge.git",
 ]
 docs = [
   "mkdocs>=1.6,<2",

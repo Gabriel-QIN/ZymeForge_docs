@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: zymepage-api
+    runtime: python
+    plan: free
+    branch: master
+    buildCommand: python -m pip install --upgrade pip && python -m pip install --index-url https://pypi.org/simple ".[web]"
+    startCommand: uvicorn zymepage.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/models
+    autoDeploy: true

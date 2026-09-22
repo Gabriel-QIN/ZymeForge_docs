@@ -15,6 +15,18 @@ Open [http://127.0.0.1:8000/tools](http://127.0.0.1:8000/tools). To expose anoth
 zymepage web --host 0.0.0.0 --port 8080
 ```
 
+## Public backend deployment
+
+GitHub Pages serves the documentation only. Deploy the FastAPI service separately with Render:
+
+1. Open [Render](https://render.com) and choose **New → Blueprint**.
+2. Connect `Gabriel-QIN/ZymeForge_docs` and select `render.yaml`.
+3. Deploy the `zymepage-api` service.
+
+Render will provide a URL such as `https://zymepage-api.onrender.com`. Its API endpoints are `/api/models`, `/api/docs`, and `/tools`.
+
+The catalog is fully public after deployment. Registered adapters without their upstream model runner and weights return HTTP `503` rather than fabricated predictions.
+
 ## API
 
 The web process also exposes:

@@ -27,7 +27,7 @@ python -m pip install --index-url https://pypi.org/simple -e ".[web]"
 zymepage web
 ```
 
-The `web` extra installs the core ZymeForge package from its GitHub repository over SSH, so GitHub authentication must be configured for private-repository access.
+The `web` extra installs the core ZymeForge package from its public GitHub repository over HTTPS.
 
 Open <http://127.0.0.1:8000/tools>. The model API is available at `/api/models`, with OpenAPI documentation at `/api/docs`.
 
