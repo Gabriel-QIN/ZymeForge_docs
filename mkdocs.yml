@@ -1,0 +1,55 @@
+site_name: ZymeForge Docs
+site_description: Reaction-driven enzyme discovery and engineering
+site_url: https://gabriel-qin.github.io/ZymeForge_docs/
+repo_url: https://github.com/Gabriel-QIN/ZymeForge_docs
+repo_name: Gabriel-QIN/ZymeForge_docs
+edit_uri: edit/master/docs/
+theme:
+  name: material
+  language: en
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+    - search.highlight
+  palette:
+    - scheme: zymeforge
+      primary: custom
+      accent: custom
+extra_css:
+  - stylesheets/extra.css
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+nav:
+  - Overview: index.md
+  - Get started:
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+      - Web catalog: getting-started/web-catalog.md
+  - Concepts:
+      - Architecture: concepts/architecture.md
+      - Evidence fusion: concepts/evidence-fusion.md
+  - Workflows:
+      - Reaction-to-enzyme mining: workflows/reaction-mining.md
+      - Engineering: workflows/engineering.md
+  - Registries:
+      - Functional Prediction V1: registries/function-models.md
+      - Add a model: registries/adding-models.md
+  - Reference:
+      - CLI: reference/cli.md
+      - Python contracts: reference/contracts.md

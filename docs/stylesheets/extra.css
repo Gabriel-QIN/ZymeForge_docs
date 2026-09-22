@@ -1,0 +1,32 @@
+/* ZymeForge documentation theme */
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap');
+
+[data-md-color-scheme="zymeforge"] {
+  --md-primary-fg-color: #142826;
+  --md-primary-bg-color: #ffffff;
+  --md-accent-fg-color: #0d8f7a;
+  --md-default-fg-color: #142826;
+  --md-default-bg-color: #f8faf9;
+  --md-typeset-a-color: #087461;
+  --md-code-bg-color: #edf4f2;
+}
+body, input { font-family: "Manrope", sans-serif; }
+code, kbd, pre { font-family: "DM Mono", monospace !important; }
+.md-header { border-bottom: 1px solid rgba(255,255,255,.12); box-shadow: none; }
+.md-tabs { background: #142826; }
+.md-main__inner { margin-top: 1.3rem; }
+.md-typeset h1 { font-weight: 700; letter-spacing: -.045em; }
+.md-typeset h2 { font-weight: 700; letter-spacing: -.025em; }
+.md-typeset .hero { padding: 3.2rem; margin: 0 0 2rem; overflow: hidden; border: 1px solid #cfe0dc; border-radius: 1rem; background: radial-gradient(circle at 88% 8%, rgba(200,239,103,.5), transparent 28%), linear-gradient(125deg, #def5ee, #fff 65%); }
+.md-typeset .hero h1 { max-width: 760px; margin: 0 0 .8rem; font-size: clamp(2.2rem, 5vw, 4.2rem); line-height: 1.02; }
+.md-typeset .hero p { max-width: 720px; color: #526964; font-size: .9rem; line-height: 1.75; }
+.md-typeset .hero .md-button { border-radius: .5rem; }
+.md-typeset .hero .md-button--primary { border-color: #142826; background: #142826; }
+.zf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; margin: 1.2rem 0; }
+.zf-card { padding: 1rem; border: 1px solid #d8e2df; border-radius: .7rem; background: white; }
+.zf-card strong { display: block; margin-bottom: .35rem; }
+.zf-card p { margin: 0; color: #62736f; font-size: .7rem; line-height: 1.55; }
+.zf-kicker { color: #087461; font-family: "DM Mono", monospace; font-size: .65rem; letter-spacing: .08em; text-transform: uppercase; }
+.md-typeset table:not([class]) { border: 1px solid #d8e2df; border-radius: .5rem; box-shadow: none; }
+.md-typeset table:not([class]) th { color: #fff; background: #142826; }
+@media (max-width: 900px) { .zf-grid { grid-template-columns: 1fr; }.md-typeset .hero { padding: 2rem 1.3rem; } }

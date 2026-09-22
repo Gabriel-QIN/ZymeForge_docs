@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{# Registry-backed tool catalog #}
+{% block title %}Tools · ZymeForge{% endblock %}
+{% block content %}
+<section class="catalog-shell">
+  <div class="catalog-hero">
+    <div>
+      <span class="eyebrow">MODEL REGISTRY V1</span>
+      <h1>Tools for enzyme discovery<br>and engineering.</h1>
+      <p>Explore a unified catalog spanning reaction mining, functional profiling, catalytic geometry, kinetics, developability, and mutation effects.</p>
+    </div>
+    <div class="hero-orbit" aria-hidden="true">
+      <span class="orbit orbit-one"></span><span class="orbit orbit-two"></span>
+      <span class="orb orb-one"></span><span class="orb orb-two"></span><span class="orb orb-three"></span>
+      <span class="hero-core">Z</span>
+    </div>
+  </div>
+
+  <div class="catalog-toolbar">
+    <label class="search-box">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
+      <input id="tool-search" type="search" placeholder="Search models, tasks, inputs, or outputs" autocomplete="off">
+      <kbd>/</kbd>
+    </label>
+    <label class="filter-select">
+      <span class="sr-only">Filter by category</span>
+      <select id="category-filter">
+        <option value="all">All categories</option>
+        {% for category in categories %}<option value="{{ category }}">{{ category }}</option>{% endfor %}
+      </select>
+    </label>
+  </div>
+
+  <div class="catalog-heading">
+    <div><span class="pulse"></span><h2>Registered models</h2></div>
+    <span id="tool-count">{{ tools|length }} models</span>
+  </div>
+
+  <div class="tool-grid" id="tool-grid">
+    {% for tool in tools %}
+    <article class="tool-card" data-category="{{ tool.category }}" data-search="{{ tool.name }} {{ tool.description }} {{ tool.task }} {{ tool.inputs|join(' ') }} {{ tool.outputs|join(' ') }}">
+      <div class="tool-card-top">
+        <div class="tag-row"><span class="tag">{{ tool.category }}</span><span class="role role-{{ tool.role }}">{{ tool.role }}</span></div>
+        <span class="status-dot" title="Adapter registered"></span>
+      </div>
+      <h3><a href="/tools/{{ tool.id }}">{{ tool.name }}</a></h3>
+      <p>{{ tool.description }}</p>
+      <div class="io-preview"><span>{{ tool.inputs|join(' + ') }}</span><i>→</i><span>{{ tool.outputs|join(' · ') }}</span></div>
+      <div class="tool-card-footer">
+        <span>{{ tool.runtime }}</span>
+        <a href="/tools/{{ tool.id }}">Open tool <span aria-hidden="true">↗</span></a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  <div class="empty-state" id="empty-state" hidden>
+    <span>∅</span><h3>No matching tools</h3><p>Try another term or clear the category filter.</p>
+  </div>
+</section>
+{% endblock %}

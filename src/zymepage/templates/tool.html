@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{# Registered model runner #}
+{% block title %}{{ tool.name }} · ZymeForge{% endblock %}
+{% block content %}
+<section class="tool-shell" data-tool-id="{{ tool.id }}">
+  <a class="back-link" href="/tools">← All tools</a>
+  <div class="tool-title-row">
+    <div>
+      <div class="tag-row"><span class="tag">{{ tool.category }}</span><span class="role role-{{ tool.role }}">{{ tool.role }}</span></div>
+      <h1>{{ tool.name }}</h1>
+      <p>{{ tool.description }}</p>
+    </div>
+    <div class="adapter-state"><span></span><div><strong>Adapter registered</strong><small>Backend weights required to run</small></div></div>
+  </div>
+  <div class="model-facts">
+    <div><span>Capability</span><strong>{{ tool.capability }}</strong></div>
+    <div><span>Version</span><strong>{{ tool.version }}</strong></div>
+    <div><span>Runtime</span><strong>{{ tool.runtime }}</strong></div>
+    <div><span>Outputs</span><strong>{{ tool.outputs|join(', ') }}</strong></div>
+  </div>
+
+  <div class="runner-layout">
+    <form class="runner-panel" id="runner-form">
+      <div class="panel-heading"><div><span class="step-number">01</span><h2>Inputs</h2></div><button type="button" class="text-button" id="fill-example">Fill example</button></div>
+      {% for field in tool.inputs %}
+      <label class="field-group">
+        <span>{{ field|replace('_', ' ') }} <b>*</b></span>
+        {% if 'sequence' in field %}
+        <textarea name="{{ field }}" rows="8" data-example="MKTLLILAVVAALAAPVAAAAPAPAPV..." placeholder="Paste an amino-acid sequence in one-letter format"></textarea>
+        {% elif 'smiles' in field %}
+        <input name="{{ field }}" data-example="CCO" placeholder="Enter a canonical SMILES string">
+        {% elif 'structure' in field %}
+        <textarea name="{{ field }}" rows="7" data-example="ATOM      1  N   MET A   1 ..." placeholder="Paste PDB/mmCIF content or a structure reference"></textarea>
+        {% elif field == 'mutation' %}
+        <input name="{{ field }}" data-example="A42V" placeholder="For example: A42V">
+        {% else %}
+        <input name="{{ field }}" data-example="example" placeholder="Enter {{ field|replace('_', ' ') }}">
+        {% endif %}
+        <small>Required by the {{ tool.name }} adapter</small>
+      </label>
+      {% endfor %}
+      <button class="run-button" type="submit"><span>Run {{ tool.name }}</span><span>→</span></button>
+      <p class="runner-note">Runs locally in the unified CUDA 12.8 environment. Upstream model code and weights must be configured.</p>
+    </form>
+    <section class="output-panel" aria-live="polite">
+      <div class="panel-heading"><div><span class="step-number">02</span><h2>Output</h2></div><span class="output-state" id="output-state">Ready</span></div>
+      <div class="output-placeholder" id="output-placeholder">
+        <div class="output-glyph"><span></span><span></span><span></span></div>
+        <h3>Results will appear here</h3>
+        <p>Submit valid inputs to invoke the registered adapter.</p>
+      </div>
+      <pre class="output-code" id="output-code" hidden></pre>
+    </section>
+  </div>
+</section>
+{% endblock %}

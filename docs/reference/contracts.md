@@ -1,0 +1,24 @@
+# Python contracts
+
+<!-- Stable ZymeForge domain records -->
+
+## Core records
+
+| Contract | Purpose |
+|---|---|
+| `ReactionRecord` | normalized chemistry and identifiers |
+| `ProteinRecord` | stable protein identity and sequence metadata |
+| `CandidateReactionPair` | reaction/protein association and retrieval routes |
+| `EvidenceRecord` | one scored observation with provenance |
+| `ScoreCard` | fused score, confidence, contributions, and warnings |
+| `FunctionalPrediction` | normalized output from function model adapters |
+
+Pydantic validates data at adapter boundaries. Serialization uses JSON-compatible values so records can be written by output plugins or transported through the web API.
+
+```python
+from zymeforge.core.models import ReactionContext
+
+context = ReactionContext(ph=7.0, temperature_c=30.0)
+```
+
+Contracts are intentionally smaller than upstream tool output. Preserve additional tool-specific content as provenance artifacts instead of expanding shared records for one provider.
