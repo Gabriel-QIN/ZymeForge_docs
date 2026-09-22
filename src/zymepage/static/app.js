@@ -52,7 +52,7 @@
     outputState.textContent = "Running";
     outputState.classList.remove("error");
     try {
-      const response = await fetch(`/api/models/${shell.dataset.toolId}/predict`, {
+      const response = await fetch(shell.dataset.endpoint || `/api/models/${shell.dataset.toolId}/predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

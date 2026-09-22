@@ -1,0 +1,63 @@
+{
+  "proteins": [
+    {
+      "id": "protein_adh_ecoli",
+      "name": "Alcohol dehydrogenase",
+      "accession": "P0A9Q7",
+      "organism": "Escherichia coli",
+      "source": "demo",
+      "sequence": "MSTAGKVIKCKAAVLWELKKPFSIEEVEVAPPKAHEVRIKMVATGICRSDDHVVSGTLVTPLPVIAGHEAAGIVESIGEGVTTVRPGDKVIPLFTPQCGKCRVCKHPEGNFCLKNDLSMPRGTMQDGTSRFTCRGKPIHHFLGTSTFSQYTVVDEISVAKIDAASPLEKVCLIGCGFSTGYGSAVKVAKVTPGSTCAVFGLGGVGLSVIMGCKAAGAARIIGVDINKDKFAKAKEFGATECINPQDFSKPIQEVLIEMTDGGVDFSFEVIGRLDTMVTALSCCQEAYGVSVIVGVPPDSQNLSMNPMLLLSGRTWKGAIFGGFKSKDSVPKLVADFMAKKFALDPLITHVLPFEKINEGFDLLRSGESIRTILTF"
+    },
+    {
+      "id": "protein_adh_yeast",
+      "name": "Alcohol dehydrogenase 1",
+      "accession": "P00330",
+      "organism": "Saccharomyces cerevisiae",
+      "source": "demo",
+      "sequence": "MIPETQKGVIFYESHGKLEKTAEVEGAKVIVTGASGGIGLAIARRLAGAKVVAVDIPDKVCLDIEPGEVTTVRPGDKVIPLFTPQCGKCRVCKHPEGNFCLKNDLSMPRGTMQDGTSRFTCRGKPIHHFLGTSTFSQYTVVDENAVAKIDAASPLEKVCLIGCGFSTGYGSAVKVAKVTPGSTCAVFGLGGVGLSVIMGCKAAGAARIIGVDINKDKFAKAKEFGATECINPQDFSKPIQEVLIEMTDGGVDFSFEVIGRLDTMVTALSCCQEAYGVSVIVGVPPDSQNLSMNPMLLLSGRTWKGAIFGGFKSKDSVPKLVADFMAKKFALDPLITHVLPFEKINEGFDLLRSGESIRTILTF"
+    },
+    {
+      "id": "protein_ldh_bacillus",
+      "name": "L-lactate dehydrogenase",
+      "accession": "P80874",
+      "organism": "Bacillus subtilis",
+      "source": "demo",
+      "sequence": "MKKIGIVGLGNVGKDLAKELGADVVVVATDPAIAEAAKKAGADVVVVNNAGITDAVEKLGADVVVVSSAGIPQATKELGADVVIVTAGASRGIGRAFAEAGADVVVVDSVAALTPAQAEAGADVVVVNNAGVEVVKRLGAEVVVVTAGARQIGKAFADAGADVVVVDSVAELTPAQAEAGADVVVVNNAGVEVVKRLGAE"
+    },
+    {
+      "id": "protein_est_bacillus",
+      "name": "Carboxylesterase",
+      "accession": "Q08169",
+      "organism": "Bacillus subtilis",
+      "source": "demo",
+      "sequence": "MKKIAVALGSASLATAAQAAPVKVAVIDLGCGSTNANLALAKAAGADVVVVSMGDSAGALAKLGADVVVVHGGGFSAAGLAKAGADVVVVTAGHSMGGALAALGAEVVVVSSAGIPQATAKLGADVVVVTNNGVEVVKRLGAE"
+    }
+  ],
+  "reactions": [
+    {
+      "id": "reaction_ethanol_oxidation",
+      "name": "Ethanol oxidation",
+      "reaction_smiles": "CCO.O>>CC=O.O",
+      "ec_numbers": ["1.1.1.1"],
+      "cross_references": {"Rhea": ["RHEA:10736"], "KEGG": ["R00754"]},
+      "associated_protein_ids": ["protein_adh_ecoli", "protein_adh_yeast"]
+    },
+    {
+      "id": "reaction_lactate_oxidation",
+      "name": "Lactate oxidation",
+      "reaction_smiles": "CC(O)C(=O)O.O>>CC(=O)C(=O)O.O",
+      "ec_numbers": ["1.1.1.27"],
+      "cross_references": {"Rhea": ["RHEA:23444"], "KEGG": ["R00703"]},
+      "associated_protein_ids": ["protein_ldh_bacillus"]
+    },
+    {
+      "id": "reaction_ester_hydrolysis",
+      "name": "Ethyl acetate hydrolysis",
+      "reaction_smiles": "CCOC(C)=O.O>>CCO.CC(=O)O",
+      "ec_numbers": ["3.1.1.1"],
+      "cross_references": {"KEGG": ["R00505"]},
+      "associated_protein_ids": ["protein_est_bacillus"]
+    }
+  ]
+}
+

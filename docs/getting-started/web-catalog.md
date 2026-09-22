@@ -1,6 +1,8 @@
 # Web catalog
 
-ZymePage provides searchable model cards and input forms backed by the same Python registry used by the ZymeForge CLI.
+ZymePage provides a static Registry Catalog for GitHub Pages and a live model catalog backed by the same Python registry used by the ZymeForge CLI.
+
+The [ZymePage Registry Catalog](../zymepage.md) works without a server using the checked-in registry snapshot. Enter a deployed API URL on that page to refresh registry metadata and call reaction mining from the browser.
 
 ```bash
 git clone https://github.com/Gabriel-QIN/ZymeForge_docs.git
@@ -36,8 +38,11 @@ The web process also exposes:
 | Endpoint | Purpose |
 |---|---|
 | `GET /api/models` | all registered model cards |
+| `GET /api/tools` | model cards plus workflow tools |
+| `GET /api/registries` | Proto-style registry groups and tool membership |
 | `GET /api/models/{id}` | one model/task adapter |
 | `POST /api/models/{id}/predict` | validated inference request |
+| `POST /api/reactions/mine` | run ZymeForge reaction-to-enzyme mining |
 | `GET /api/docs` | interactive OpenAPI reference |
 
 An adapter without an installed runner and weights returns HTTP `503` with a configuration message. This keeps registration, deployment status, and inference results distinct.

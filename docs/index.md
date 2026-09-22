@@ -4,7 +4,7 @@
 
 ZymeForge unifies reaction search, sequence and structure evidence, catalytic-site geometry, functional prediction, and protein engineering behind stable Python contracts and registries.
 
-[Install ZymeForge](getting-started/installation.md) · [Browse registered models](registries/function-models.md)
+[Install ZymeForge](getting-started/installation.md) · [Open the ZymePage Registry Catalog](zymepage.md) · [Browse registered models](registries/function-models.md)
 
 ## One framework, two directions
 

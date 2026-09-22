@@ -1,23 +1,24 @@
 {% extends "base.html" %}
-{# Registered model runner #}
-{% block title %}{{ tool.name }} · ZymeForge{% endblock %}
+{# Registered model detail and runner #}
+{% block title %}{{ tool.name }} · ZymePage{% endblock %}
 {% block content %}
-<section class="tool-shell" data-tool-id="{{ tool.id }}">
-  <a class="back-link" href="/tools">← All tools</a>
+<section class="tool-shell" data-tool-id="{{ tool.id }}" data-endpoint="{{ tool.endpoint }}">
+  <a class="back-link" href="/tools">← All registries</a>
   <div class="tool-title-row">
     <div>
       <div class="tag-row"><span class="tag">{{ tool.category }}</span><span class="role role-{{ tool.role }}">{{ tool.role }}</span></div>
       <h1>{{ tool.name }}</h1>
-      <p>{{ tool.description }}</p>
+      <p>{{ tool.introduction }}</p>
     </div>
-    <div class="adapter-state"><span></span><div><strong>Adapter registered</strong><small>Backend weights required to run</small></div></div>
+    <div class="adapter-state"><span></span><div>{% if tool.kind == "workflow" %}<strong>Workflow ready</strong><small>Uses the ZymeForge workflow API</small>{% else %}<strong>Adapter registered</strong><small>Backend weights required to run</small>{% endif %}</div></div>
   </div>
   <div class="model-facts">
-    <div><span>Capability</span><strong>{{ tool.capability }}</strong></div>
+    <div><span>Registry</span><strong>{{ tool.registry }}</strong></div>
     <div><span>Version</span><strong>{{ tool.version }}</strong></div>
     <div><span>Runtime</span><strong>{{ tool.runtime }}</strong></div>
     <div><span>Outputs</span><strong>{{ tool.outputs|join(', ') }}</strong></div>
   </div>
+  <div class="tool-description"><span class="eyebrow">ABOUT THIS ADAPTER</span><p>{{ tool.description }}</p><div class="source-facts"><span>Upstream: <strong>{{ tool.name }}</strong></span>{% if tool.citation %}<a href="{{ tool.citation }}" target="_blank" rel="noreferrer">Citation ↗</a>{% endif %}{% if tool.license %}<span>License: <strong>{{ tool.license }}</strong></span>{% endif %}</div></div>
 
   <div class="runner-layout">
     <form class="runner-panel" id="runner-form">
@@ -33,6 +34,8 @@
         <textarea name="{{ field }}" rows="7" data-example="ATOM      1  N   MET A   1 ..." placeholder="Paste PDB/mmCIF content or a structure reference"></textarea>
         {% elif field == 'mutation' %}
         <input name="{{ field }}" data-example="A42V" placeholder="For example: A42V">
+        {% elif field == 'reaction' %}
+        <input name="{{ field }}" data-example="CCO.O>>CC=O.O" placeholder="substrates>>products">
         {% else %}
         <input name="{{ field }}" data-example="example" placeholder="Enter {{ field|replace('_', ' ') }}">
         {% endif %}
@@ -40,15 +43,11 @@
       </label>
       {% endfor %}
       <button class="run-button" type="submit"><span>Run {{ tool.name }}</span><span>→</span></button>
-      <p class="runner-note">Runs locally in the unified CUDA 12.8 environment. Upstream model code and weights must be configured.</p>
+      <p class="runner-note">{% if tool.kind == "workflow" %}Runs the registered ZymeForge workflow through the API.{% else %}Runs through the ZymeForge API in the unified CUDA 12.8 environment. Upstream model code and weights must be configured.{% endif %}</p>
     </form>
     <section class="output-panel" aria-live="polite">
       <div class="panel-heading"><div><span class="step-number">02</span><h2>Output</h2></div><span class="output-state" id="output-state">Ready</span></div>
-      <div class="output-placeholder" id="output-placeholder">
-        <div class="output-glyph"><span></span><span></span><span></span></div>
-        <h3>Results will appear here</h3>
-        <p>Submit valid inputs to invoke the registered adapter.</p>
-      </div>
+      <div class="output-placeholder" id="output-placeholder"><div class="output-glyph"><span></span><span></span><span></span></div><h3>Results will appear here</h3><p>Submit valid inputs to invoke the registered adapter.</p></div>
       <pre class="output-code" id="output-code" hidden></pre>
     </section>
   </div>

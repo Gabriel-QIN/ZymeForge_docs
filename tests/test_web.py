@@ -30,6 +30,20 @@ def test_models_api_exposes_registry_metadata() -> None:
     assert {model["name"] for model in payload["models"]} >= {"CLEAN", "CataPro", "GeoStab"}
 
 
+def test_registry_api_groups_models_and_empty_extension_points() -> None:
+    response = request("GET", "/api/registries")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["count"] == 8
+    reaction = next(item for item in payload["registries"] if item["id"] == "reaction-mining")
+    structure = next(item for item in payload["registries"] if item["id"] == "structure-search")
+    function = next(item for item in payload["registries"] if item["id"] == "function-prediction")
+    assert reaction["count"] == 1
+    assert reaction["tools"][0]["name"] == "Reaction-to-Enzyme Mining"
+    assert {tool["name"] for tool in structure["tools"]} == {"GraphEC-AS", "EC-LMGraph"}
+    assert {tool["name"] for tool in function["tools"]} >= {"CLEAN", "CataPro"}
+
+
 def test_unknown_tool_is_404() -> None:
     assert request("GET", "/api/models/not-a-model").status_code == 404
 
@@ -42,3 +56,22 @@ def test_unconfigured_backend_is_explicit() -> None:
     )
     assert response.status_code == 503
     assert "weights and runner" in response.json()["detail"]
+
+
+def test_reaction_mining_api_uses_core_workflow() -> None:
+    response = request(
+        "POST",
+        "/api/reactions/mine",
+        json={"reaction": "CCO.O>>CC=O.O", "top_k": 2, "ph": 7.0},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["reaction"]["canonical_smiles"] == "CCO.O>>CC=O.O"
+    assert len(payload["candidates"]) == 2
+    assert payload["candidates"][0]["score_card"]["zyme_score"] > 0
+
+
+def test_reaction_mining_tool_page_uses_workflow_endpoint() -> None:
+    response = request("GET", "/tools/reaction-to-enzyme--mining")
+    assert response.status_code == 200
+    assert 'data-endpoint="/api/reactions/mine"' in response.text
