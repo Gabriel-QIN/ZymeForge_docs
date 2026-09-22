@@ -20,6 +20,8 @@ mkdocs build --strict
 
 ## Model catalog
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Gabriel-QIN/ZymeForge_docs)
+
 The catalog reads Functional Prediction Registry metadata directly from the installed ZymeForge package.
 
 ```bash

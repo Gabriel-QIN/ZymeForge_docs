@@ -19,6 +19,8 @@ zymepage web --host 0.0.0.0 --port 8080
 
 GitHub Pages serves the documentation only. Deploy the FastAPI service separately with Render:
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Gabriel-QIN/ZymeForge_docs)
+
 1. Open [Render](https://render.com) and choose **New → Blueprint**.
 2. Connect `Gabriel-QIN/ZymeForge_docs` and select `render.yaml`.
 3. Deploy the `zymepage-api` service.
