@@ -16,12 +16,12 @@
 .zf-registry-nav nav { display: grid; gap: .2rem; }
 .zf-registry-nav a { display: grid; grid-template-columns: 1fr auto; gap: .45rem; padding: .55rem .6rem; border-radius: .25rem; color: var(--zf-muted); font-size: .78rem; text-decoration: none; }
 .zf-registry-nav a:hover, .zf-registry-nav a:focus, .zf-registry-nav a.active { color: var(--zf-ink); background: var(--zf-soft); }
-.zf-registry-nav em { color: #81918d; font-family: "DM Mono", monospace; font-size: .67rem; font-style: normal; }
+.zf-registry-nav em { color: #81918d; font-family: "Manrope", sans-serif; font-size: .67rem; font-style: normal; font-variant-numeric: tabular-nums; }
 .zf-registry-section { padding: 0 0 2.2rem; margin-bottom: 2.2rem; border-bottom: 1px solid var(--zf-line); scroll-margin-top: 5rem; }
 .zf-registry-section:last-child { margin-bottom: 0; }
 .zf-registry-section h3 { margin: 0; font-size: 1.35rem; letter-spacing: -.025em; }
 .zf-registry-section-head { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
-.zf-registry-section-head > span { color: var(--zf-muted); font-family: "DM Mono", monospace; font-size: .68rem; text-transform: uppercase; }
+.zf-registry-section-head > span { color: var(--zf-muted); font-family: "Manrope", sans-serif; font-size: .68rem; font-variant-numeric: tabular-nums; text-transform: uppercase; }
 .zf-registry-intro { max-width: 680px; margin: .5rem 0 1rem; color: var(--zf-muted); font-size: .82rem; line-height: 1.65; }
 .zf-tool-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
 .zf-tool-card { min-width: 0; padding: 1rem; border: 1px solid var(--zf-line); border-radius: .35rem; background: #fff; }
@@ -29,7 +29,8 @@
 .zf-tool-card p { min-height: 2.8em; margin: 0; color: var(--zf-muted); font-size: .76rem; line-height: 1.55; }
 .zf-tool-card a { color: var(--zf-mint); font-weight: 700; text-decoration: none; }
 .zf-tool-top, .zf-tool-meta { display: flex; justify-content: space-between; gap: .6rem; align-items: center; }
-.zf-tool-top span, .zf-tool-meta { color: #81918d; font-family: "DM Mono", monospace; font-size: .64rem; }
+.zf-tool-top span { color: #81918d; font-family: "DM Mono", monospace; font-size: .64rem; }
+.zf-tool-meta { color: #81918d; font-family: "Manrope", sans-serif; font-size: .64rem; font-variant-numeric: tabular-nums; }
 .zf-tool-tag { color: var(--zf-mint); text-transform: uppercase; }
 .zf-tool-meta { padding-top: .65rem; margin-top: .8rem; border-top: 1px solid #edf1f0; }
 .zf-empty { padding: 1rem; border: 1px dashed var(--zf-line); color: var(--zf-muted); font-size: .8rem; }
