@@ -157,12 +157,17 @@ def _configured_runner() -> Callable | None:
 
 
 def _safe_engineering_options(options: dict[str, Any]) -> dict[str, Any]:
+    path_options = {
+        "bias_AA_per_residue",
+        "omit_AA_per_residue",
+    }
     forbidden = {
         key
         for key in options
         if "path" in key
         or "checkpoint" in key
         or key.endswith("_multi")
+        or key in path_options
         or key in {"pdb", "pdbdir", "pdb_path", "out_folder", "outdir"}
     }
     if forbidden:
