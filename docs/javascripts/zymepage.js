@@ -5,7 +5,7 @@
     root.dataset.initialized = "true";
 
   const snapshot = [
-    { id: "reaction-mining", label: "Reaction Mining", intro: "Start from substrates, products, reaction SMILES, EC numbers, or names and retrieve enzyme candidates.", tools: [{ id: "reaction-to-enzyme--mining", name: "Reaction-to-Enzyme Mining", version: "workflow-1.0", category: "Reaction mining", introduction: "Search exact and similar reactions, infer EC classes, and rank enzyme candidates.", inputs: ["reaction"], outputs: ["ranked_candidates", "evidence", "zyme_score"], endpoint: "/api/reactions/mine", kind: "workflow" }] },
+    { id: "reaction-mining", label: "Reaction Mining", intro: "Start from substrates, products, reaction SMILES, EC numbers, or names and retrieve enzyme candidates.", tools: [{ id: "reaction-to-enzyme--mining", name: "Reaction-to-Enzyme Mining", version: "workflow-1.0", category: "Reaction mining", introduction: "Search exact and similar reactions, infer EC classes, and rank enzyme candidates.", inputs: ["reaction"], outputs: ["ranked_candidates", "evidence", "zyme_score"], endpoint: "/api/reactions/mine", kind: "workflow" }, { id: "substrate-to-enzyme--mining", name: "Substrate-to-Enzyme Mining", version: "workflow-1.0", category: "Reaction mining", introduction: "Resolve SMILES, InChI, InChIKey, or names and retrieve linked enzymes.", inputs: ["query"], outputs: ["candidate_enzymes", "predicted_ec", "confidence", "provenance"], endpoint: "/api/substrates/mine", kind: "workflow" }] },
     { id: "sequence-search", label: "Sequence Search", intro: "Search sequence space with alignment, profile, and protein language model evidence.", tools: [] },
     { id: "structure-search", label: "Structure Search", intro: "Compare global folds and local catalytic geometry to recover remote enzyme relationships.", tools: [{ name: "GraphEC-AS", version: "adapter-1.0", category: "Catalytic site", introduction: "Identify residues and local geometry that support catalysis.", inputs: ["protein_sequence", "protein_structure"], outputs: ["catalytic_residues", "local_confidence"] }, { name: "EC-LMGraph", version: "adapter-1.0", category: "Catalytic site", introduction: "Identify residues and local geometry that support catalysis.", inputs: ["protein_sequence", "protein_structure"], outputs: ["catalytic_residues", "local_confidence"] }] },
     { id: "function-prediction", label: "Function Prediction", intro: "Profile EC function, substrate compatibility, kinetics, stability, and developability.", tools: [
@@ -79,6 +79,20 @@
       const payload = await response.json();
       output.textContent = JSON.stringify(payload, null, 2);
     } catch (error) { output.textContent = JSON.stringify({ detail: error.message }, null, 2); }
+    });
+
+    const substrateForm = root.querySelector("#zf-substrate-form");
+    const substrateOutput = root.querySelector("#zf-substrate-output");
+    substrateForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const base = apiBase();
+      if (!base) { substrateOutput.textContent = "Enter a deployed ZymeForge API URL first."; return; }
+      substrateOutput.textContent = "Running...";
+      try {
+        const response = await fetch(`${base}/api/substrates/mine`, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ query: root.querySelector("#zf-substrate").value, top_k: 20 }) });
+        const payload = await response.json();
+        substrateOutput.textContent = JSON.stringify(payload, null, 2);
+      } catch (error) { substrateOutput.textContent = JSON.stringify({ detail: error.message }, null, 2); }
     });
   };
 

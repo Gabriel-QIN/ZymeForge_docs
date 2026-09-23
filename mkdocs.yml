@@ -48,6 +48,11 @@ nav:
   - Concepts:
       - Architecture: concepts/architecture.md
       - Evidence fusion: concepts/evidence-fusion.md
+  - Development:
+      - Current architecture: development/CURRENT_ARCHITECTURE.md
+      - Capability matrix: development/CAPABILITY_MATRIX.md
+      - Gap analysis: development/GAP_ANALYSIS.md
+      - Roadmap: development/DEVELOPMENT_ROADMAP.md
   - Workflows:
       - Reaction-to-enzyme mining: workflows/reaction-mining.md
       - Engineering: workflows/engineering.md

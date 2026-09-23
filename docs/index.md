@@ -6,6 +6,8 @@ ZymeForge unifies reaction search, sequence and structure evidence, catalytic-si
 
 [Install ZymeForge](getting-started/installation.md) · [Open the ZymePage Registry Catalog](zymepage.md) · [Browse registered models](registries/function-models.md)
 
+[Current implementation status](development/CURRENT_ARCHITECTURE.md) · [Capability matrix](development/CAPABILITY_MATRIX.md) · [Development roadmap](development/DEVELOPMENT_ROADMAP.md)
+
 ## One framework, two directions
 
 ### Discover

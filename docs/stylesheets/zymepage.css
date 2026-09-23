@@ -34,6 +34,7 @@
 .zf-tool-meta { padding-top: .65rem; margin-top: .8rem; border-top: 1px solid #edf1f0; }
 .zf-empty { padding: 1rem; border: 1px dashed var(--zf-line); color: var(--zf-muted); font-size: .8rem; }
 .zf-runner { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 2rem; padding: 1.5rem; border: 1px solid var(--zf-line); background: var(--zf-soft); }
+.zf-runner + .zf-runner { margin-top: 1rem; }
 .zf-runner h2 { margin: .35rem 0 .5rem; font-size: 1.4rem; letter-spacing: -.03em; }
 .zf-runner form { min-width: 0; }
 .zf-runner pre { min-height: 9rem; max-height: 22rem; margin: 1rem 0 0; padding: .85rem; overflow: auto; color: #d9f7ee; background: var(--zf-ink); font-family: "DM Mono", monospace; font-size: .7rem; line-height: 1.55; white-space: pre-wrap; }

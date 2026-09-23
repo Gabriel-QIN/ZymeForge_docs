@@ -38,8 +38,11 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
     reaction = next(item for item in payload["registries"] if item["id"] == "reaction-mining")
     structure = next(item for item in payload["registries"] if item["id"] == "structure-search")
     function = next(item for item in payload["registries"] if item["id"] == "function-prediction")
-    assert reaction["count"] == 1
-    assert reaction["tools"][0]["name"] == "Reaction-to-Enzyme Mining"
+    assert reaction["count"] == 2
+    assert {tool["name"] for tool in reaction["tools"]} == {
+        "Reaction-to-Enzyme Mining",
+        "Substrate-to-Enzyme Mining",
+    }
     assert {tool["name"] for tool in structure["tools"]} == {"GraphEC-AS", "EC-LMGraph"}
     assert {tool["name"] for tool in function["tools"]} >= {"CLEAN", "CataPro"}
 
@@ -75,3 +78,21 @@ def test_reaction_mining_tool_page_uses_workflow_endpoint() -> None:
     response = request("GET", "/tools/reaction-to-enzyme--mining")
     assert response.status_code == 200
     assert 'data-endpoint="/api/reactions/mine"' in response.text
+
+
+def test_substrate_and_general_reaction_discovery_apis() -> None:
+    substrate = request(
+        "POST",
+        "/api/substrates/mine",
+        json={"query": "LFQSCWFLJHTTHZ-UHFFFAOYSA-N", "top_k": 2},
+    )
+    reaction = request(
+        "POST",
+        "/api/reactions/discover",
+        json={"query": "ethanol -> acetaldehyde", "top_k": 2},
+    )
+    assert substrate.status_code == 200
+    assert reaction.status_code == 200
+    assert substrate.json()["count"] == 2
+    assert reaction.json()["count"] == 2
+    assert substrate.json()["candidates"][0]["provenance"]["database_version"]

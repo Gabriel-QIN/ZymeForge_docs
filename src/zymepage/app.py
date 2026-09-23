@@ -13,9 +13,11 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
-from zymeforge.bootstrap import build_reaction_workflow
+from zymeforge.bootstrap import build_discovery_service, build_reaction_workflow
 from zymeforge.core.models import ReactionContext
 from zymeforge.function.adapters import ModelBackendUnavailable
+from zymeforge.reaction import ReactionInputType
+from zymeforge.substrate import SubstrateInputType
 
 from zymepage.catalog import get_tool, list_models, list_registry_groups, list_tools
 
@@ -32,9 +34,32 @@ class ReactionMiningRequest(BaseModel):
     temperature_c: float | None = None
 
 
+class SubstrateDiscoveryRequest(BaseModel):
+    query: str = Field(min_length=1, description="SMILES, InChI, InChIKey, or name")
+    input_type: SubstrateInputType = SubstrateInputType.AUTO
+    top_k: int = Field(default=20, ge=1, le=1000)
+
+
+class ReactionDiscoveryRequest(BaseModel):
+    query: str = Field(min_length=1, description="Reaction SMILES, EC, name, or description")
+    input_type: ReactionInputType = ReactionInputType.AUTO
+    top_k: int = Field(default=20, ge=1, le=1000)
+
+
 @lru_cache(maxsize=4)
 def _workflow(catalog_path: str):
     return build_reaction_workflow(catalog_path)
+
+
+@lru_cache(maxsize=4)
+def _discovery(catalog_path: str):
+    return build_discovery_service(catalog_path)
+
+
+def _catalog_path() -> Path:
+    return Path(
+        os.getenv("ZYMEFORGE_CATALOG", str(REPOSITORY_DIR / "data" / "demo_catalog.json"))
+    )
 
 
 def create_app() -> FastAPI:
@@ -164,9 +189,7 @@ def create_app() -> FastAPI:
     @application.post("/api/reactions/mine")
     async def mine_reaction(request: ReactionMiningRequest) -> dict[str, Any]:
         """Run the core ZymeForge reaction-to-enzyme workflow."""
-        catalog_path = Path(
-            os.getenv("ZYMEFORGE_CATALOG", str(REPOSITORY_DIR / "data" / "demo_catalog.json"))
-        )
+        catalog_path = _catalog_path()
         if not catalog_path.exists():
             raise HTTPException(
                 status_code=503,
@@ -181,6 +204,45 @@ def create_app() -> FastAPI:
         except (ValueError, KeyError) as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         return result.model_dump(mode="json")
+
+    @application.post("/api/substrates/mine")
+    async def mine_substrate(request: SubstrateDiscoveryRequest) -> dict[str, Any]:
+        """Run substrate-to-enzyme discovery using the configured provider."""
+        catalog_path = _catalog_path()
+        if not catalog_path.exists():
+            raise HTTPException(status_code=503, detail="ZymeForge catalog is not configured")
+        predictions = _discovery(str(catalog_path)).predict_enzymes_from_substrate(
+            request.query,
+            input_type=request.input_type,
+            limit=request.top_k,
+        )
+        return {
+            "query": request.query,
+            "input_type": request.input_type,
+            "count": len(predictions),
+            "candidates": [item.model_dump(mode="json") for item in predictions],
+        }
+
+    @application.post("/api/reactions/discover")
+    async def discover_reaction(request: ReactionDiscoveryRequest) -> dict[str, Any]:
+        """Discover enzymes from reaction SMILES, EC, name, or description."""
+        catalog_path = _catalog_path()
+        if not catalog_path.exists():
+            raise HTTPException(status_code=503, detail="ZymeForge catalog is not configured")
+        try:
+            predictions = _discovery(str(catalog_path)).predict_enzymes_from_reaction(
+                request.query,
+                input_type=request.input_type,
+                limit=request.top_k,
+            )
+        except (ValueError, KeyError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        return {
+            "query": request.query,
+            "input_type": request.input_type,
+            "count": len(predictions),
+            "candidates": [item.model_dump(mode="json") for item in predictions],
+        }
 
     return application
 

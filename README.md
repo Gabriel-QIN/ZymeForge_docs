@@ -32,6 +32,6 @@ zymepage web
 
 The `web` extra installs the core ZymeForge package from its public GitHub repository over HTTPS.
 
-Open <http://127.0.0.1:8000/tools>. The registry API is available at `/api/registries`, the model API at `/api/models`, and reaction mining at `/api/reactions/mine`. OpenAPI documentation is at `/api/docs`.
+Open <http://127.0.0.1:8000/tools>. The registry API is available at `/api/registries`, the model API at `/api/models`, reaction mining at `/api/reactions/mine`, general reaction discovery at `/api/reactions/discover`, and substrate discovery at `/api/substrates/mine`. OpenAPI documentation is at `/api/docs`.
 
 Registered adapters without configured upstream weights return an explicit HTTP `503`; the interface does not generate placeholder predictions.

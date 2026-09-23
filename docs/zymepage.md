@@ -42,6 +42,22 @@ ZymePage is the browser-facing catalog for ZymeForge. Registry metadata is avail
       <pre id="zf-reaction-output" aria-live="polite">Connect an API to run this workflow.</pre>
     </form>
   </section>
+
+  <section class="zf-runner" aria-labelledby="zf-substrate-title">
+    <div>
+      <span class="zf-kicker">Live discovery</span>
+      <h2 id="zf-substrate-title">Substrate-to-Enzyme Mining</h2>
+      <p>Submit SMILES, InChI, InChIKey, or a substrate name to the connected ZymeForge API.</p>
+    </div>
+    <form id="zf-substrate-form">
+      <label for="zf-substrate">Substrate query</label>
+      <div class="zf-api-row">
+        <input id="zf-substrate" name="query" value="CCO" required>
+        <button type="submit">Find enzymes</button>
+      </div>
+      <pre id="zf-substrate-output" aria-live="polite">Connect an API to run this workflow.</pre>
+    </form>
+  </section>
 </div>
 
 The catalog is static by design so it can be hosted by GitHub Pages. The API URL is stored in this browser only; it can point to a local `zymepage web` process or a separately deployed FastAPI service.

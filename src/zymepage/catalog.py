@@ -13,7 +13,7 @@ REGISTRY_GROUPS = (
         "label": "Reaction Mining",
         "registries": (
             "reaction_database", "reaction_encoder", "reaction_search",
-            "reaction2ec", "reaction2enzyme",
+            "reaction2ec", "reaction2enzyme", "substrate2enzyme",
         ),
         "intro": (
             "Start from substrates, products, reaction SMILES, EC numbers, or names "
@@ -143,6 +143,33 @@ TASK_INTROS = {
 }
 
 WORKFLOW_TOOLS = (
+    {
+        "id": "substrate-to-enzyme--mining",
+        "name": "Substrate-to-Enzyme Mining",
+        "plugin": "substrate_discovery",
+        "version": "workflow-1.0",
+        "task": "reaction_mining",
+        "category": "Reaction mining",
+        "introduction": (
+            "Resolve SMILES, InChI, InChIKey, or names and retrieve linked enzymes."
+        ),
+        "description": (
+            "Runs the configured substrate-to-enzyme provider and returns normalized "
+            "candidate, EC, reaction, confidence, source, and provenance fields."
+        ),
+        "role": "primary",
+        "runtime": "zymeforge-unified",
+        "inputs": ["query"],
+        "outputs": ["candidate_enzymes", "predicted_ec", "confidence", "provenance"],
+        "capability": "substrate.to_enzyme",
+        "registry": "substrate2enzyme",
+        "requires_gpu": False,
+        "citation": None,
+        "license": "Apache-2.0",
+        "available": True,
+        "kind": "workflow",
+        "endpoint": "/api/substrates/mine",
+    },
     {
         "id": "reaction-to-enzyme--mining",
         "name": "Reaction-to-Enzyme Mining",

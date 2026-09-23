@@ -40,7 +40,14 @@
       "reaction_smiles": "CCO.O>>CC=O.O",
       "ec_numbers": ["1.1.1.1"],
       "cross_references": {"Rhea": ["RHEA:10736"], "KEGG": ["R00754"]},
-      "associated_protein_ids": ["protein_adh_ecoli", "protein_adh_yeast"]
+      "associated_protein_ids": ["protein_adh_ecoli", "protein_adh_yeast"],
+      "metadata": {
+        "description": "ethanol to acetaldehyde oxidation",
+        "substrate_names": ["ethanol", "water"],
+        "product_names": ["acetaldehyde", "water"],
+        "substrate_inchis": ["InChI=1S/C2H6O/c1-2-3/h3H,2H2,1H3"],
+        "substrate_inchikeys": ["LFQSCWFLJHTTHZ-UHFFFAOYSA-N"]
+      }
     },
     {
       "id": "reaction_lactate_oxidation",
@@ -60,4 +67,3 @@
     }
   ]
 }
-

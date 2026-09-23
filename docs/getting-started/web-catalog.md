@@ -43,6 +43,8 @@ The web process also exposes:
 | `GET /api/models/{id}` | one model/task adapter |
 | `POST /api/models/{id}/predict` | validated inference request |
 | `POST /api/reactions/mine` | run ZymeForge reaction-to-enzyme mining |
+| `POST /api/reactions/discover` | discover enzymes from reaction SMILES, EC, name, or description |
+| `POST /api/substrates/mine` | discover enzymes from SMILES, InChI, InChIKey, or substrate name |
 | `GET /api/docs` | interactive OpenAPI reference |
 
 An adapter without an installed runner and weights returns HTTP `503` with a configuration message. This keeps registration, deployment status, and inference results distinct.

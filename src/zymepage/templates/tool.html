@@ -36,6 +36,8 @@
         <input name="{{ field }}" data-example="A42V" placeholder="For example: A42V">
         {% elif field == 'reaction' %}
         <input name="{{ field }}" data-example="CCO.O>>CC=O.O" placeholder="substrates>>products">
+        {% elif field == 'query' %}
+        <input name="{{ field }}" data-example="CCO" placeholder="SMILES, InChI, InChIKey, or name">
         {% else %}
         <input name="{{ field }}" data-example="example" placeholder="Enter {{ field|replace('_', ' ') }}">
         {% endif %}
