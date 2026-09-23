@@ -56,6 +56,7 @@ nav:
   - Workflows:
       - Reaction-to-enzyme mining: workflows/reaction-mining.md
       - Protein similarity retrieval: workflows/similarity-retrieval.md
+      - Structure prediction and post-screening: workflows/structure-postscreening.md
       - Engineering: workflows/engineering.md
   - Registries:
       - Functional Prediction V1: registries/function-models.md

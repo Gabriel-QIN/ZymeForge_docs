@@ -13,6 +13,19 @@ prediction wraps the official unZipro mutation script. Provider-specific argumen
 through a validated JSON `--options` file; generated JSON retains the full parameters and
 provenance.
 
+## Structure
+
+```bash
+zymeforge structure predict --help
+zymeforge structure compare --help
+zymeforge structure active-site --help
+zymeforge structure ligand --help
+zymeforge structure quality --help
+```
+
+Prediction commands call explicitly configured official providers. Comparison, geometry, and QC
+commands preserve native metrics and never apply acceptance thresholds automatically.
+
 | Command | Description |
 |---|---|
 | `zymeforge run-reaction` | run the local reaction-mining workflow |
