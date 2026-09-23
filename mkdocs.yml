@@ -55,6 +55,7 @@ nav:
       - Roadmap: development/DEVELOPMENT_ROADMAP.md
   - Workflows:
       - Reaction-to-enzyme mining: workflows/reaction-mining.md
+      - Protein similarity retrieval: workflows/similarity-retrieval.md
       - Engineering: workflows/engineering.md
   - Registries:
       - Functional Prediction V1: registries/function-models.md

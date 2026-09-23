@@ -43,7 +43,16 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
         "Reaction-to-Enzyme Mining",
         "Substrate-to-Enzyme Mining",
     }
-    assert {tool["name"] for tool in structure["tools"]} == {"GraphEC-AS", "EC-LMGraph"}
+    assert {tool["name"] for tool in structure["tools"]} >= {
+        "GraphEC-AS",
+        "EC-LMGraph",
+        "SaProt Retrieval",
+        "ProteinMPNN Encoder Retrieval",
+        "Foldseek Retrieval",
+        "DALI Validation",
+    }
+    sequence = next(item for item in payload["registries"] if item["id"] == "sequence-search")
+    assert {tool["name"] for tool in sequence["tools"]} == {"ESM-2 Retrieval"}
     assert {tool["name"] for tool in function["tools"]} >= {"CLEAN", "CataPro"}
 
 
@@ -96,3 +105,13 @@ def test_substrate_and_general_reaction_discovery_apis() -> None:
     assert substrate.json()["count"] == 2
     assert reaction.json()["count"] == 2
     assert substrate.json()["candidates"][0]["provenance"]["database_version"]
+
+
+def test_similarity_api_reports_missing_index_without_fake_results() -> None:
+    response = request(
+        "POST",
+        "/api/similarity/search",
+        json={"query_id": "q", "sequence": "MKT", "methods": ["esm2"], "top_k": 5},
+    )
+    assert response.status_code == 503
+    assert "ZYMEFORGE_ESM2_INDEX" in response.json()["detail"]

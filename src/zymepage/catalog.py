@@ -197,6 +197,119 @@ WORKFLOW_TOOLS = (
     },
 )
 
+SIMILARITY_TOOLS = (
+    {
+        "id": "esm2--similarity-retrieval",
+        "name": "ESM-2 Retrieval",
+        "plugin": "esm2_650m",
+        "version": "1.0.0",
+        "task": "protein_similarity",
+        "category": "Sequence search",
+        "introduction": "Retrieve proteins by ESM-2 sequence-semantic similarity.",
+        "description": "Batched 650M embeddings, content cache, and Flat/HNSW retrieval.",
+        "role": "primary",
+        "runtime": "zymeforge-unified",
+        "inputs": ["sequence"],
+        "outputs": ["similarity_hits"],
+        "capability": "sequence.search",
+        "registry": "sequence_search",
+        "requires_gpu": True,
+        "citation": None,
+        "license": "Apache-2.0",
+        "available": False,
+        "kind": "retrieval",
+        "endpoint": "/api/similarity/search",
+    },
+    {
+        "id": "saprot--similarity-retrieval",
+        "name": "SaProt Retrieval",
+        "plugin": "saprot_650m",
+        "version": "1.0.0",
+        "task": "protein_similarity",
+        "category": "Structure search",
+        "introduction": "Retrieve proteins using amino-acid and 3Di structural context.",
+        "description": "Structure-aware SaProt embeddings with explicit structure provenance.",
+        "role": "primary",
+        "runtime": "zymeforge-unified",
+        "inputs": ["sequence", "structural_tokens"],
+        "outputs": ["similarity_hits"],
+        "capability": "structure.search",
+        "registry": "structure_search",
+        "requires_gpu": True,
+        "citation": None,
+        "license": "Apache-2.0",
+        "available": False,
+        "kind": "retrieval",
+        "endpoint": "/api/similarity/search",
+    },
+    {
+        "id": "proteinmpnn--similarity-retrieval",
+        "name": "ProteinMPNN Encoder Retrieval",
+        "plugin": "proteinmpnn_encoder_experimental",
+        "version": "1.0.0",
+        "task": "protein_similarity",
+        "category": "Structure search",
+        "introduction": "Experimental retrieval from final ProteinMPNN backbone encoder states.",
+        "description": "Chain-level, mean-pooled 128D backbone representation.",
+        "role": "experimental",
+        "runtime": "zymeforge-unified",
+        "inputs": ["structure_pdb"],
+        "outputs": ["similarity_hits"],
+        "capability": "structure.search",
+        "registry": "structure_search",
+        "requires_gpu": True,
+        "citation": None,
+        "license": "Apache-2.0",
+        "available": False,
+        "kind": "retrieval",
+        "endpoint": "/api/similarity/search",
+    },
+    {
+        "id": "foldseek--similarity-retrieval",
+        "name": "Foldseek Retrieval",
+        "plugin": "foldseek",
+        "version": "adapter-1.0",
+        "task": "protein_similarity",
+        "category": "Structure search",
+        "introduction": "Search structures by 3Di and amino-acid local alignment.",
+        "description": "Preserves identity, coverage, E-value, bit score, TM-scores, and lDDT.",
+        "role": "primary",
+        "runtime": "external-binary",
+        "inputs": ["structure_pdb"],
+        "outputs": ["similarity_hits"],
+        "capability": "structure.search",
+        "registry": "structure_search",
+        "requires_gpu": False,
+        "citation": None,
+        "license": "Apache-2.0",
+        "available": False,
+        "kind": "retrieval",
+        "endpoint": "/api/similarity/search",
+    },
+    {
+        "id": "dali--structural-validation",
+        "name": "DALI Validation",
+        "plugin": "dali",
+        "version": "adapter-1.0",
+        "task": "structural_validation",
+        "category": "Structure search",
+        "introduction": "Validate only the top retrieved structures using DALI Z-scores.",
+        "description": "Returns Z-score, RMSD, aligned length, identity, and protein lengths.",
+        "role": "validation",
+        "runtime": "external-binary",
+        "inputs": ["structure_pdb", "candidate_structures"],
+        "outputs": ["dali_results"],
+        "capability": "structure.search",
+        "registry": "structure_search",
+        "requires_gpu": False,
+        "citation": None,
+        "license": "Apache-2.0",
+        "available": False,
+        "kind": "retrieval",
+        "endpoint": "/api/similarity/search",
+    },
+)
+
 
 def tool_id(model: type[Any]) -> str:
     """Return a stable URL identifier for a registered model/task pair."""
@@ -235,7 +348,7 @@ def list_tools() -> list[dict[str, Any]]:
     """List every functional and mutation model registered by ZymeForge."""
     models = (*MODEL_PLUGINS, *MUTATION_MODEL_PLUGINS)
     return sorted(
-        [*WORKFLOW_TOOLS, *(serialize_model(model) for model in models)],
+        [*WORKFLOW_TOOLS, *SIMILARITY_TOOLS, *(serialize_model(model) for model in models)],
         key=lambda item: item["name"],
     )
 
@@ -260,7 +373,7 @@ def get_tool(identifier: str) -> tuple[type[Any] | None, dict[str, Any]] | None:
     """Resolve a catalog item and its model adapter class."""
     for tool in list_tools():
         if tool["id"] == identifier:
-            if tool["kind"] == "workflow":
+            if tool["kind"] in {"workflow", "retrieval"}:
                 return None, tool
             for model in (*MODEL_PLUGINS, *MUTATION_MODEL_PLUGINS):
                 if tool_id(model) == identifier:

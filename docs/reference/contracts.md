@@ -12,6 +12,11 @@
 | `EvidenceRecord` | one scored observation with provenance |
 | `ScoreCard` | fused score, confidence, contributions, and warnings |
 | `FunctionalPrediction` | normalized output from function model adapters |
+| `SimilarityHit` | one method-specific sequence or structure retrieval hit |
+| `EmbeddingRecord` | representation plus hashes, checkpoint, pooling, and provenance |
+| `IndexManifest` | database, model, metric, backend, counts, version, and timestamp |
+| `MergedSimilarityCandidate` | canonical target with independent per-method hits |
+| `DaliResult` | top-N structural validation evidence |
 
 Pydantic validates data at adapter boundaries. Serialization uses JSON-compatible values so records can be written by output plugins or transported through the web API.
 
