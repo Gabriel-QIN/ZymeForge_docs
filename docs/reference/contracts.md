@@ -18,6 +18,9 @@
 | `MergedSimilarityCandidate` | canonical target with independent per-method hits |
 | `DaliResult` | top-N structural validation evidence |
 
+`SimilarityHit.method` includes `tmvec`, `dhr`, and `protrek`. ProTrek hits preserve query and
+target modality; DHR hits preserve the asymmetric query/target encoder identity.
+
 Pydantic validates data at adapter boundaries. Serialization uses JSON-compatible values so records can be written by output plugins or transported through the web API.
 
 ```python

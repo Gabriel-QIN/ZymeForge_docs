@@ -6,11 +6,15 @@ framework does not average incomparable cosine, E-value, and TM-score values.
 | Route | Representation | Required assets | Output |
 |---|---|---|---|
 | ESM-2 | sequence semantics | 650M checkpoint and vector index | cosine-ranked hits |
+| TM-Vec | sequence → structural neighborhood | ProtT5, TM-Vec checkpoint and index | cosine-ranked hits |
+| DHR | asymmetric remote homology | official query/target checkpoints and target index | inner-product hits |
+| ProTrek | sequence/structure/text | official source, 650M weights and modality index | cross-modal cosine hits |
 | SaProt | amino acid + 3Di | 650M checkpoint, Foldseek, vector index | structure-aware cosine hits |
 | ProteinMPNN | backbone encoder | official runner/checkpoint and vector index | experimental cosine hits |
 | Foldseek | 3Di + amino-acid alignment | Foldseek binary and structure database | alignment metrics |
 
-The union is deduplicated by canonical protein ID. Optional reciprocal-rank fusion uses only ranks.
+The union is deduplicated by canonical protein ID. DHR target indexes are never built from query
+encoder vectors. Optional reciprocal-rank fusion uses only ranks.
 DALI then validates a configurable top-N subset and preserves Z-score, RMSD, aligned length,
 sequence identity, query length, and target length as independent evidence.
 
@@ -43,8 +47,25 @@ zymeforge similarity search \
   --structure-map databases/candidate_structures.json
 ```
 
-Every run writes `task.json`, four method-specific hit tables, `merged_hits.tsv`,
+Every run writes `task.json`, one hit table per retrieval method, `merged_hits.tsv`,
 `dali_results.tsv`, `candidates.json`, `metadata.json`, and a log directory.
+
+TM-Vec, DHR, and ProTrek use the same index workflow:
+
+```bash
+zymeforge similarity embed --method tmvec --input proteins.fasta \
+  --tmvec-checkpoint weights/tmvec.ckpt --output embeddings/tmvec.jsonl
+
+zymeforge similarity embed --method dhr --input proteins.fasta \
+  --dhr-checkpoint-dir weights/dhr --dhr-role target --output embeddings/dhr.jsonl
+zymeforge similarity build-index --method dhr --embeddings embeddings/dhr.jsonl \
+  --metric inner_product --output indexes/dhr.npz
+
+zymeforge similarity search --query pet_hydrolase.txt --methods protrek \
+  --protrek-query-type text --protrek-target-modality sequence \
+  --protrek-source external/ProTrek --protrek-weights weights/ProTrek_650M \
+  --index-dir indexes --top-k 100
+```
 
 ## API
 
@@ -75,6 +96,10 @@ HTTP 503 rather than placeholder hits.
 | Variable | Purpose |
 |---|---|
 | `ZYMEFORGE_ESM2_INDEX` | ESM-2 index bundle path |
+| `ZYMEFORGE_TMVEC_INDEX` / `ZYMEFORGE_TMVEC_CHECKPOINT` | TM-Vec index and checkpoint |
+| `ZYMEFORGE_DHR_INDEX` / `ZYMEFORGE_DHR_CHECKPOINT_DIR` | DHR target index and dual checkpoints |
+| `ZYMEFORGE_PROTREK_INDEX` | ProTrek target-modality index |
+| `ZYMEFORGE_PROTREK_SOURCE` / `ZYMEFORGE_PROTREK_WEIGHTS` | official source checkout and weights |
 | `ZYMEFORGE_SAPROT_INDEX` | SaProt index bundle path |
 | `ZYMEFORGE_PROTEINMPNN_INDEX` | ProteinMPNN index bundle path |
 | `ZYMEFORGE_PROTEINMPNN_RUNNER` | official-backend `module:function` |

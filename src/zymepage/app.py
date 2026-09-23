@@ -22,6 +22,7 @@ from zymeforge.bootstrap import build_discovery_service, build_reaction_workflow
 from zymeforge.core.models import ReactionContext
 from zymeforge.function.adapters import ModelBackendUnavailable
 from zymeforge.reaction import ReactionInputType
+from zymeforge.similarity.dhr import DHREmbeddingExtractor, DHRSimilaritySearch
 from zymeforge.similarity.esm2 import ESM2EmbeddingExtractor, ESM2SimilaritySearch
 from zymeforge.similarity.foldseek import FoldseekRunner
 from zymeforge.similarity.indexing import load_index_bundle
@@ -31,8 +32,14 @@ from zymeforge.similarity.proteinmpnn import (
     ProteinMPNNSimilaritySearch,
     parse_pdb_backbones,
 )
+from zymeforge.similarity.protrek import (
+    ProTrekEmbeddingExtractor,
+    ProTrekModality,
+    ProTrekSimilaritySearch,
+)
 from zymeforge.similarity.saprot import SaProtEmbeddingExtractor, SaProtSimilaritySearch
 from zymeforge.similarity.schemas import SimilarityMethod
+from zymeforge.similarity.tmvec import TMVecEmbeddingExtractor, TMVecSimilaritySearch
 from zymeforge.similarity.validation.dali import DaliRunner
 from zymeforge.substrate import SubstrateInputType
 
@@ -68,7 +75,10 @@ class SimilaritySearchRequest(BaseModel):
     sequence: str | None = Field(default=None, min_length=1)
     structure_pdb: str | None = Field(default=None, min_length=1)
     structural_tokens: str | None = Field(default=None, min_length=1)
+    text: str | None = Field(default=None, min_length=1)
     methods: list[SimilarityMethod] = Field(default_factory=lambda: [SimilarityMethod.ESM2])
+    protrek_query_type: ProTrekModality = ProTrekModality.SEQUENCE
+    protrek_target_modality: ProTrekModality = ProTrekModality.SEQUENCE
     top_k: int = Field(default=100, ge=1, le=1000)
     dali_top_n: int = Field(default=0, ge=0, le=100)
     use_rrf: bool = False
@@ -330,6 +340,78 @@ def create_app() -> FastAPI:
                         )
                         hits[method] = adapter.search_sequence(
                             request.query_id, request.sequence, top_k=request.top_k
+                        )
+                    elif method == SimilarityMethod.TMVEC:
+                        if request.sequence is None:
+                            raise ValueError("TM-Vec requires sequence")
+                        index, manifest = load_index_bundle(
+                            _configured_path("ZYMEFORGE_TMVEC_INDEX")
+                        )
+                        adapter = TMVecSimilaritySearch(
+                            TMVecEmbeddingExtractor(
+                                checkpoint=_configured_path("ZYMEFORGE_TMVEC_CHECKPOINT"),
+                                device=device,
+                            ),
+                            index,
+                            index_name=manifest.name,
+                            index_backend=manifest.backend,
+                        )
+                        hits[method] = adapter.search_sequence(
+                            request.query_id, request.sequence, top_k=request.top_k
+                        )
+                    elif method == SimilarityMethod.DHR:
+                        if request.sequence is None:
+                            raise ValueError("DHR requires sequence")
+                        index, manifest = load_index_bundle(
+                            _configured_path("ZYMEFORGE_DHR_INDEX")
+                        )
+                        adapter = DHRSimilaritySearch(
+                            DHREmbeddingExtractor(
+                                checkpoint_directory=_configured_path(
+                                    "ZYMEFORGE_DHR_CHECKPOINT_DIR"
+                                ),
+                                device=device,
+                            ),
+                            index,
+                            index_name=manifest.name,
+                        )
+                        hits[method] = adapter.search_sequence(
+                            request.query_id, request.sequence, top_k=request.top_k
+                        )
+                    elif method == SimilarityMethod.PROTREK:
+                        index, manifest = load_index_bundle(
+                            _configured_path("ZYMEFORGE_PROTREK_INDEX")
+                        )
+                        modality = request.protrek_query_type
+                        if modality == ProTrekModality.SEQUENCE:
+                            if request.sequence is None:
+                                raise ValueError("ProTrek sequence query requires sequence")
+                            protrek_query: str | Path = request.sequence
+                        elif modality == ProTrekModality.TEXT:
+                            if request.text is None:
+                                raise ValueError("ProTrek text query requires text")
+                            protrek_query = request.text
+                        else:
+                            if structure is None:
+                                raise ValueError("ProTrek structure query requires structure_pdb")
+                            protrek_query = structure
+                        configured_checkpoint = os.getenv("ZYMEFORGE_PROTREK_CHECKPOINT")
+                        adapter = ProTrekSimilaritySearch(
+                            ProTrekEmbeddingExtractor(
+                                source_directory=_configured_path("ZYMEFORGE_PROTREK_SOURCE"),
+                                weights_directory=_configured_path("ZYMEFORGE_PROTREK_WEIGHTS"),
+                                checkpoint=configured_checkpoint,
+                                device=device,
+                            ),
+                            index,
+                            target_modality=request.protrek_target_modality,
+                            index_name=manifest.name,
+                        )
+                        hits[method] = adapter.search(
+                            protrek_query,
+                            query_type=modality,
+                            query_id=request.query_id,
+                            top_k=request.top_k,
                         )
                     elif method == SimilarityMethod.SAPROT:
                         if request.sequence is None or request.structural_tokens is None:

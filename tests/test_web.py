@@ -52,7 +52,12 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
         "DALI Validation",
     }
     sequence = next(item for item in payload["registries"] if item["id"] == "sequence-search")
-    assert {tool["name"] for tool in sequence["tools"]} == {"ESM-2 Retrieval"}
+    assert {tool["name"] for tool in sequence["tools"]} == {
+        "ESM-2 Retrieval",
+        "TM-Vec Retrieval",
+        "DHR Retrieval",
+        "ProTrek Retrieval",
+    }
     assert {tool["name"] for tool in function["tools"]} >= {"CLEAN", "CataPro"}
 
 
@@ -115,3 +120,10 @@ def test_similarity_api_reports_missing_index_without_fake_results() -> None:
     )
     assert response.status_code == 503
     assert "ZYMEFORGE_ESM2_INDEX" in response.json()["detail"]
+    tmvec = request(
+        "POST",
+        "/api/similarity/search",
+        json={"query_id": "q", "sequence": "MKT", "methods": ["tmvec"], "top_k": 5},
+    )
+    assert tmvec.status_code == 503
+    assert "ZYMEFORGE_TMVEC_INDEX" in tmvec.json()["detail"]
