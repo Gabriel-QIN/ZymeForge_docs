@@ -1,5 +1,18 @@
 # CLI reference
 
+## Engineering
+
+```bash
+zymeforge engineer redesign --help
+zymeforge engineer score --help
+zymeforge engineer mutate --help
+```
+
+The redesign and score commands wrap the unmodified official LigandMPNN scripts. Mutation
+prediction wraps the official unZipro mutation script. Provider-specific arguments are supplied
+through a validated JSON `--options` file; generated JSON retains the full parameters and
+provenance.
+
 | Command | Description |
 |---|---|
 | `zymeforge run-reaction` | run the local reaction-mining workflow |

@@ -376,6 +376,92 @@ SIMILARITY_TOOLS = (
     },
 )
 
+ENGINEERING_TOOLS = (
+    {
+        "id": "ligandmpnn--sequence-redesign",
+        "name": "LigandMPNN Sequence Redesign",
+        "plugin": "ligandmpnn",
+        "version": "official-wrapper-1.0",
+        "task": "sequence_redesign",
+        "category": "Engineering",
+        "introduction": (
+            "Redesign a complete scaffold or selected pocket residues while preserving "
+            "catalytic, ligand, membrane, and symmetry constraints."
+        ),
+        "description": (
+            "One official wrapper for ProteinMPNN, LigandMPNN, SolubleMPNN, global-label "
+            "membrane MPNN, per-residue membrane MPNN, score.py, and side-chain packing."
+        ),
+        "role": "primary",
+        "runtime": "official-upstream",
+        "inputs": ["structure_pdb", "model_type", "options"],
+        "outputs": ["designed_sequences", "mutations", "scores", "provenance"],
+        "capability": "engineering.redesign",
+        "registry": "design_model",
+        "requires_gpu": True,
+        "citation": "Dauparas et al., LigandMPNN",
+        "license": "MIT (upstream)",
+        "available": False,
+        "kind": "engineering",
+        "endpoint": "/api/engineering/redesign",
+    },
+    {
+        "id": "ligandmpnn--sequence-scoring",
+        "name": "LigandMPNN Sequence Scoring",
+        "plugin": "ligandmpnn",
+        "version": "official-wrapper-1.0",
+        "task": "sequence_scoring",
+        "category": "Engineering",
+        "introduction": (
+            "Compare native, mutant, and designed sequences on matched backbones and "
+            "ligand contexts."
+        ),
+        "description": (
+            "Official score.py integration for autoregressive, single-AA, "
+            "sequence-conditioned, and backbone-only scoring."
+        ),
+        "role": "validation",
+        "runtime": "official-upstream",
+        "inputs": ["structure_pdb", "sequence", "scoring_mode", "options"],
+        "outputs": ["score", "per_residue_score", "provenance"],
+        "capability": "engineering.redesign",
+        "registry": "design_model",
+        "requires_gpu": True,
+        "citation": "Dauparas et al., LigandMPNN",
+        "license": "MIT (upstream)",
+        "available": False,
+        "kind": "engineering",
+        "endpoint": "/api/engineering/score",
+    },
+    {
+        "id": "unzipro--mutation-prediction",
+        "name": "unZipro Mutation Prediction",
+        "plugin": "unzipro",
+        "version": "official-wrapper-1.0",
+        "task": "mutation_prediction",
+        "category": "Engineering",
+        "introduction": (
+            "Prioritize function-oriented single substitutions for a selected protein."
+        ),
+        "description": (
+            "Calls official unZipro inference, preserves its native probabilities and "
+            "logits, and maps ranked predictions into ZymeForge candidates."
+        ),
+        "role": "primary",
+        "runtime": "official-upstream",
+        "inputs": ["sequence", "structure_pdb", "top_k"],
+        "outputs": ["ranked_mutations", "native_scores", "provenance"],
+        "capability": "engineering.mutation.predictor",
+        "registry": "mutation_predictor",
+        "requires_gpu": True,
+        "citation": "unZipro",
+        "license": None,
+        "available": False,
+        "kind": "engineering",
+        "endpoint": "/api/engineering/mutations",
+    },
+)
+
 
 def tool_id(model: type[Any]) -> str:
     """Return a stable URL identifier for a registered model/task pair."""
@@ -414,7 +500,12 @@ def list_tools() -> list[dict[str, Any]]:
     """List every functional and mutation model registered by ZymeForge."""
     models = (*MODEL_PLUGINS, *MUTATION_MODEL_PLUGINS)
     return sorted(
-        [*WORKFLOW_TOOLS, *SIMILARITY_TOOLS, *(serialize_model(model) for model in models)],
+        [
+            *WORKFLOW_TOOLS,
+            *SIMILARITY_TOOLS,
+            *ENGINEERING_TOOLS,
+            *(serialize_model(model) for model in models),
+        ],
         key=lambda item: item["name"],
     )
 
@@ -439,7 +530,7 @@ def get_tool(identifier: str) -> tuple[type[Any] | None, dict[str, Any]] | None:
     """Resolve a catalog item and its model adapter class."""
     for tool in list_tools():
         if tool["id"] == identifier:
-            if tool["kind"] in {"workflow", "retrieval"}:
+            if tool["kind"] in {"workflow", "retrieval", "engineering"}:
                 return None, tool
             for model in (*MODEL_PLUGINS, *MUTATION_MODEL_PLUGINS):
                 if tool_id(model) == identifier:

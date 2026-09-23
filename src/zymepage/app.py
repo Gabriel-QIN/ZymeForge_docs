@@ -17,9 +17,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from zymeforge.bootstrap import build_discovery_service, build_reaction_workflow
 from zymeforge.core.models import ReactionContext
+from zymeforge.engineer.mutate import UnZiproOptions, UnZiproProvider
+from zymeforge.engineer.redesign import (
+    LigandMPNNDesignOptions,
+    LigandMPNNModelType,
+    LigandMPNNProvider,
+    LigandMPNNScoreOptions,
+    MPNNScoringMode,
+)
 from zymeforge.function.adapters import ModelBackendUnavailable
 from zymeforge.reaction import ReactionInputType
 from zymeforge.similarity.dhr import DHREmbeddingExtractor, DHRSimilaritySearch
@@ -84,6 +92,31 @@ class SimilaritySearchRequest(BaseModel):
     use_rrf: bool = False
 
 
+class RedesignRequest(BaseModel):
+    structure_pdb: str = Field(min_length=20)
+    model_type: LigandMPNNModelType = LigandMPNNModelType.PROTEIN
+    options: dict[str, Any] = Field(default_factory=dict)
+
+
+class SequenceScoreRequest(BaseModel):
+    structure_pdb: str = Field(min_length=20)
+    sequence: str | None = Field(default=None, min_length=1)
+    model_type: LigandMPNNModelType = LigandMPNNModelType.PROTEIN
+    scoring_mode: MPNNScoringMode = MPNNScoringMode.SINGLE_AA
+    options: dict[str, Any] = Field(default_factory=dict)
+
+
+class MutationRequest(BaseModel):
+    parent_id: str = Field(min_length=1)
+    sequence: str = Field(min_length=1)
+    structure_pdb: str = Field(min_length=20)
+    top_k: int = Field(default=100, ge=1, le=1000)
+    residue_map: dict[str, int] | None = None
+    residues: str | None = None
+    output_probabilities: bool = False
+    output_logits: bool = False
+
+
 @lru_cache(maxsize=4)
 def _workflow(catalog_path: str):
     return build_reaction_workflow(catalog_path)
@@ -121,6 +154,55 @@ def _configured_runner() -> Callable | None:
     if not callable(runner):
         raise RuntimeError("configured ProteinMPNN runner is not callable")
     return runner
+
+
+def _safe_engineering_options(options: dict[str, Any]) -> dict[str, Any]:
+    forbidden = {
+        key
+        for key in options
+        if "path" in key
+        or "checkpoint" in key
+        or key.endswith("_multi")
+        or key in {"pdb", "pdbdir", "pdb_path", "out_folder", "outdir"}
+    }
+    if forbidden:
+        raise ValueError(
+            "server-managed path options cannot be supplied: " + ", ".join(sorted(forbidden))
+        )
+    return dict(options)
+
+
+def _mpnn_checkpoint(model_type: LigandMPNNModelType) -> tuple[str, Path]:
+    variable = {
+        LigandMPNNModelType.PROTEIN: "ZYMEFORGE_PROTEIN_MPNN_CHECKPOINT",
+        LigandMPNNModelType.LIGAND: "ZYMEFORGE_LIGAND_MPNN_CHECKPOINT",
+        LigandMPNNModelType.SOLUBLE: "ZYMEFORGE_SOLUBLE_MPNN_CHECKPOINT",
+        LigandMPNNModelType.GLOBAL_MEMBRANE: "ZYMEFORGE_GLOBAL_MEMBRANE_MPNN_CHECKPOINT",
+        LigandMPNNModelType.PER_RESIDUE_MEMBRANE: (
+            "ZYMEFORGE_PER_RESIDUE_MEMBRANE_MPNN_CHECKPOINT"
+        ),
+    }[model_type]
+    field = {
+        LigandMPNNModelType.PROTEIN: "checkpoint_protein_mpnn",
+        LigandMPNNModelType.LIGAND: "checkpoint_ligand_mpnn",
+        LigandMPNNModelType.SOLUBLE: "checkpoint_soluble_mpnn",
+        LigandMPNNModelType.GLOBAL_MEMBRANE: "checkpoint_global_label_membrane_mpnn",
+        LigandMPNNModelType.PER_RESIDUE_MEMBRANE: (
+            "checkpoint_per_residue_label_membrane_mpnn"
+        ),
+    }[model_type]
+    return field, _configured_path(variable)
+
+
+def _public_engineering_result(result: Any) -> dict[str, Any]:
+    payload = result.model_dump(mode="json")
+    payload["artifacts"] = []
+    payload["input_structure"] = "staged-api-input"
+    if "output_structure" in payload:
+        payload["output_structure"] = None
+    provenance = payload.get("provenance", {})
+    provenance.pop("command", None)
+    return payload
 
 
 def create_app() -> FastAPI:
@@ -482,6 +564,130 @@ def create_app() -> FastAPI:
                 "candidates": [item.model_dump(mode="json") for item in candidates],
                 "dali": [item.model_dump(mode="json") for item in dali_results],
             },
+        }
+
+    @application.post("/api/engineering/redesign")
+    async def redesign_sequence(request: RedesignRequest) -> dict[str, Any]:
+        """Run official LigandMPNN with server-managed source and checkpoints."""
+        try:
+            source = _configured_path("ZYMEFORGE_LIGANDMPNN_SOURCE")
+            checkpoint_field, checkpoint = _mpnn_checkpoint(request.model_type)
+            values = _safe_engineering_options(request.options)
+            with tempfile.TemporaryDirectory(prefix="zymeforge_redesign_") as temporary:
+                work = Path(temporary)
+                structure = work / "input.pdb"
+                structure.write_text(request.structure_pdb, encoding="utf-8")
+                values.update(
+                    {
+                        "pdb_path": structure,
+                        "out_folder": work / "output",
+                        "model_type": request.model_type,
+                        checkpoint_field: checkpoint,
+                    }
+                )
+                if values.get("pack_side_chains"):
+                    values["checkpoint_path_sc"] = _configured_path(
+                        "ZYMEFORGE_LIGANDMPNN_SIDECHAIN_CHECKPOINT"
+                    )
+                options = LigandMPNNDesignOptions(**values)
+                results = LigandMPNNProvider(source).design_sequence(
+                    structure, model_type=request.model_type, options=options
+                )
+                public_results = [_public_engineering_result(item) for item in results]
+        except ValidationError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except (OSError, RuntimeError) as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return {
+            "job_id": str(uuid4()),
+            "status": "completed",
+            "count": len(public_results),
+            "designs": public_results,
+        }
+
+    @application.post("/api/engineering/score")
+    async def score_sequence(request: SequenceScoreRequest) -> dict[str, Any]:
+        """Run official LigandMPNN score.py on the sequence encoded in the submitted PDB."""
+        try:
+            source = _configured_path("ZYMEFORGE_LIGANDMPNN_SOURCE")
+            checkpoint_field, checkpoint = _mpnn_checkpoint(request.model_type)
+            values = _safe_engineering_options(request.options)
+            with tempfile.TemporaryDirectory(prefix="zymeforge_score_") as temporary:
+                work = Path(temporary)
+                structure = work / "input.pdb"
+                structure.write_text(request.structure_pdb, encoding="utf-8")
+                values.update(
+                    {
+                        "pdb_path": structure,
+                        "out_folder": work / "output",
+                        "model_type": request.model_type,
+                        "scoring_mode": request.scoring_mode,
+                        checkpoint_field: checkpoint,
+                    }
+                )
+                options = LigandMPNNScoreOptions(**values)
+                results = LigandMPNNProvider(source).score_sequence_mpnn(
+                    structure, request.sequence, options=options
+                )
+                public_results = [_public_engineering_result(item) for item in results]
+        except ValidationError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except (OSError, RuntimeError) as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return {
+            "job_id": str(uuid4()),
+            "status": "completed",
+            "count": len(public_results),
+            "scores": public_results,
+        }
+
+    @application.post("/api/engineering/mutations")
+    async def predict_mutations(request: MutationRequest) -> dict[str, Any]:
+        """Run official unZipro; current upstream inference requires a structure."""
+        try:
+            source = _configured_path("ZYMEFORGE_UNZIPRO_SOURCE")
+            parameter = _configured_path("ZYMEFORGE_UNZIPRO_CHECKPOINT")
+            config = _configured_path("ZYMEFORGE_UNZIPRO_CONFIG")
+            with tempfile.TemporaryDirectory(prefix="zymeforge_unzipro_") as temporary:
+                work = Path(temporary)
+                structure = work / "input.pdb"
+                structure.write_text(request.structure_pdb, encoding="utf-8")
+                options = UnZiproOptions(
+                    pdb=structure,
+                    gpu=int(os.getenv("ZYMEFORGE_ENGINEERING_GPU", "0")),
+                    param=parameter,
+                    config_path=config,
+                    outdir=work / "output",
+                    probs=request.output_probabilities,
+                    logits=request.output_logits,
+                    rank_by_prob=True,
+                    res=request.residues,
+                )
+                results = UnZiproProvider(source).predict_mutations(
+                    request.sequence,
+                    parent_id=request.parent_id,
+                    top_k=request.top_k,
+                    options=options,
+                    residue_map=request.residue_map,
+                )
+                public_results = [
+                    {**item.model_dump(mode="json"), "artifacts": []} for item in results
+                ]
+        except ValidationError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except (OSError, RuntimeError) as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return {
+            "job_id": str(uuid4()),
+            "status": "completed",
+            "count": len(public_results),
+            "mutations": public_results,
         }
 
     return application

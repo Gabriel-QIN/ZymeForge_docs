@@ -19,6 +19,8 @@ def test_catalog_page_lists_registered_models() -> None:
     assert response.status_code == 200
     assert "CLEAN" in response.text
     assert "ThermoMPNN" in response.text
+    assert "LigandMPNN Sequence Redesign" in response.text
+    assert "unZipro Mutation Prediction" in response.text
     assert request("GET", "/static/styles.css").status_code == 200
 
 
@@ -38,6 +40,7 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
     reaction = next(item for item in payload["registries"] if item["id"] == "reaction-mining")
     structure = next(item for item in payload["registries"] if item["id"] == "structure-search")
     function = next(item for item in payload["registries"] if item["id"] == "function-prediction")
+    engineering = next(item for item in payload["registries"] if item["id"] == "engineering")
     assert reaction["count"] == 2
     assert {tool["name"] for tool in reaction["tools"]} == {
         "Reaction-to-Enzyme Mining",
@@ -59,6 +62,43 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
         "ProTrek Retrieval",
     }
     assert {tool["name"] for tool in function["tools"]} >= {"CLEAN", "CataPro"}
+    assert {tool["name"] for tool in engineering["tools"]} >= {
+        "LigandMPNN Sequence Redesign",
+        "LigandMPNN Sequence Scoring",
+        "unZipro Mutation Prediction",
+    }
+
+
+def test_engineering_tool_pages_use_dedicated_endpoints() -> None:
+    redesign = request("GET", "/tools/ligandmpnn--sequence-redesign")
+    mutation = request("GET", "/tools/unzipro--mutation-prediction")
+    assert redesign.status_code == 200
+    assert 'data-endpoint="/api/engineering/redesign"' in redesign.text
+    assert mutation.status_code == 200
+    assert 'data-endpoint="/api/engineering/mutations"' in mutation.text
+
+
+def test_engineering_api_reports_missing_official_backend() -> None:
+    structure = "ATOM      1  N   ALA A   1      0.000   0.000   0.000"
+    redesign = request(
+        "POST",
+        "/api/engineering/redesign",
+        json={"structure_pdb": structure, "model_type": "protein_mpnn"},
+    )
+    mutation = request(
+        "POST",
+        "/api/engineering/mutations",
+        json={
+            "parent_id": "p1",
+            "sequence": "A",
+            "structure_pdb": structure,
+            "top_k": 1,
+        },
+    )
+    assert redesign.status_code == 503
+    assert "ZYMEFORGE_LIGANDMPNN_SOURCE" in redesign.json()["detail"]
+    assert mutation.status_code == 503
+    assert "ZYMEFORGE_UNZIPRO_SOURCE" in mutation.json()["detail"]
 
 
 def test_unknown_tool_is_404() -> None:
