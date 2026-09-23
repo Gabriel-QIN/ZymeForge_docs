@@ -21,6 +21,8 @@ def test_catalog_page_lists_registered_models() -> None:
     assert "ThermoMPNN" in response.text
     assert "LigandMPNN Sequence Redesign" in response.text
     assert "unZipro Mutation Prediction" in response.text
+    assert "Boltz-2 Structure Prediction" in response.text
+    assert "Active-site Geometry Validation" in response.text
     assert request("GET", "/static/styles.css").status_code == 200
 
 
@@ -41,6 +43,9 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
     structure = next(item for item in payload["registries"] if item["id"] == "structure-search")
     function = next(item for item in payload["registries"] if item["id"] == "function-prediction")
     engineering = next(item for item in payload["registries"] if item["id"] == "engineering")
+    structure_prediction = next(
+        item for item in payload["registries"] if item["id"] == "structure-prediction"
+    )
     assert reaction["count"] == 2
     assert {tool["name"] for tool in reaction["tools"]} == {
         "Reaction-to-Enzyme Mining",
@@ -66,6 +71,12 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
         "LigandMPNN Sequence Redesign",
         "LigandMPNN Sequence Scoring",
         "unZipro Mutation Prediction",
+    }
+    assert {tool["name"] for tool in structure_prediction["tools"]} >= {
+        "Boltz-2 Structure Prediction",
+        "AlphaFold 3 Local Prediction",
+        "ESMFold Fast Screening",
+        "MolProbity Structure QC",
     }
 
 
@@ -99,6 +110,34 @@ def test_engineering_api_reports_missing_official_backend() -> None:
     assert "ZYMEFORGE_LIGANDMPNN_SOURCE" in redesign.json()["detail"]
     assert mutation.status_code == 503
     assert "ZYMEFORGE_UNZIPRO_SOURCE" in mutation.json()["detail"]
+
+
+def test_structure_catalog_and_missing_provider_are_explicit() -> None:
+    page = request("GET", "/tools/boltz2--structure-prediction")
+    assert page.status_code == 200
+    assert 'data-endpoint="/api/structures/predict"' in page.text
+    response = request(
+        "POST",
+        "/api/structures/predict",
+        json={"candidate_id": "c1", "method": "boltz2", "sequence": "ACDE"},
+    )
+    assert response.status_code == 503
+    assert "Boltz-2" in response.json()["detail"]
+
+
+def test_structure_api_rejects_client_paths() -> None:
+    response = request(
+        "POST",
+        "/api/structures/predict",
+        json={
+            "candidate_id": "c1",
+            "method": "boltz2",
+            "sequence": "ACDE",
+            "options": {"cache": "/tmp/server"},
+        },
+    )
+    assert response.status_code == 422
+    assert "server-managed" in response.json()["detail"]
 
 
 def test_unknown_tool_is_404() -> None:
