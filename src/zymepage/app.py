@@ -13,12 +13,13 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field, ValidationError
+from zymeforge.agent import AgentRequest, OpenAIResponsesProvider, RequestCompiler
 from zymeforge.bootstrap import build_discovery_service, build_reaction_workflow
 from zymeforge.core.models import ReactionContext
 from zymeforge.engineer.mutate import UnZiproOptions, UnZiproProvider
@@ -30,6 +31,9 @@ from zymeforge.engineer.redesign import (
     MPNNScoringMode,
 )
 from zymeforge.function.adapters import ModelBackendUnavailable
+from zymeforge.harness.factory import build_harness_runtime
+from zymeforge.harness.run_store import RunStore
+from zymeforge.harness.validator import PlanValidationError
 from zymeforge.reaction import ReactionInputType
 from zymeforge.similarity.dhr import DHREmbeddingExtractor, DHRSimilaritySearch
 from zymeforge.similarity.esm2 import ESM2EmbeddingExtractor, ESM2SimilaritySearch
@@ -165,6 +169,16 @@ class StructureQualityAPIRequest(BaseModel):
     structure: str = Field(min_length=20)
 
 
+class HarnessCompileRequest(BaseModel):
+    query: str = Field(min_length=1, max_length=20_000)
+    model: str | None = Field(default=None, min_length=1, max_length=100)
+
+
+class HarnessRunRequest(BaseModel):
+    query: str = Field(min_length=1, max_length=20_000)
+    agent_request: AgentRequest
+
+
 @lru_cache(maxsize=4)
 def _workflow(catalog_path: str):
     return build_reaction_workflow(catalog_path)
@@ -179,6 +193,22 @@ def _catalog_path() -> Path:
     return Path(
         os.getenv("ZYMEFORGE_CATALOG", str(REPOSITORY_DIR / "data" / "demo_catalog.json"))
     )
+
+
+def _harness_root() -> Path:
+    return Path(os.getenv("ZYMEFORGE_HARNESS_RUNS", "/tmp/zymeforge-harness-runs"))
+
+
+def _reject_harness_paths(request: AgentRequest) -> None:
+    forbidden = {
+        key
+        for key in request.target
+        if any(token in key.lower() for token in ("path", "file", "directory"))
+    }
+    if forbidden:
+        raise ValueError(
+            "server filesystem paths cannot be supplied: " + ", ".join(sorted(forbidden))
+        )
 
 
 def _configured_path(name: str) -> Path:
@@ -306,6 +336,70 @@ def create_app() -> FastAPI:
                 "page": "tools",
             },
         )
+
+    @application.get("/harness", response_class=HTMLResponse, include_in_schema=False)
+    async def harness_page(request: Request) -> HTMLResponse:
+        return templates.TemplateResponse(
+            request=request,
+            name="harness.html",
+            context={"docs_url": docs_url, "page": "harness"},
+        )
+
+    @application.post("/harness/compile", include_in_schema=False)
+    @application.post("/api/harness/compile")
+    async def compile_harness(request: HarnessCompileRequest) -> dict[str, Any]:
+        try:
+            provider = OpenAIResponsesProvider(
+                model=request.model or os.getenv("ZYMEFORGE_LLM_MODEL", "gpt-6-astra")
+            )
+            compiled = RequestCompiler(provider).compile(request.query)
+        except (RuntimeError, ValueError) as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return compiled.model_dump(mode="json")
+
+    @application.post("/harness/run", include_in_schema=False)
+    @application.post("/api/harness/run")
+    async def run_harness(
+        request: HarnessRunRequest, background_tasks: BackgroundTasks
+    ) -> dict[str, Any]:
+        try:
+            _reject_harness_paths(request.agent_request)
+            runtime = build_harness_runtime(_harness_root())
+            runtime.validator.validate_or_raise(request.agent_request)
+        except (ValueError, PlanValidationError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        run_id = f"harness_{uuid4().hex}"
+        background_tasks.add_task(
+            runtime.run,
+            request.agent_request,
+            user_query=request.query,
+            run_id=run_id,
+        )
+        return {"run_id": run_id, "status": "PENDING"}
+
+    @application.get("/harness/runs/{run_id}", include_in_schema=False)
+    @application.get("/api/harness/runs/{run_id}")
+    async def harness_run(run_id: str) -> dict[str, Any]:
+        try:
+            state = RunStore(_harness_root()).load(run_id)
+        except (OSError, ValueError, ValidationError) as exc:
+            raise HTTPException(status_code=404, detail="Unknown Harness run") from exc
+        return {
+            "run_id": state.run_id,
+            "status": state.status,
+            "current_step": state.current_step,
+            "plan": state.resolved_plan,
+            "completed_steps": state.completed_steps,
+            "failed_steps": state.failed_steps,
+            "candidate_count": len(state.candidates),
+            "candidates": [item.model_dump(mode="json") for item in state.candidates],
+            "results": {
+                step: [result.model_dump(mode="json") for result in results]
+                for step, results in state.results.items()
+            },
+            "missing_information": state.agent_request.missing_information,
+            "error": state.error,
+        }
 
     @application.get(
         "/tools/{identifier}", response_class=HTMLResponse, include_in_schema=False

@@ -206,3 +206,64 @@ def test_similarity_api_reports_missing_index_without_fake_results() -> None:
     )
     assert tmvec.status_code == 503
     assert "ZYMEFORGE_TMVEC_INDEX" in tmvec.json()["detail"]
+
+
+def test_harness_page_and_waiting_run(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("ZYMEFORGE_HARNESS_RUNS", str(tmp_path))
+    page = request("GET", "/harness")
+    assert page.status_code == 200
+    assert "From scientific intent" in page.text
+    agent_request = {
+        "task_type": "remote_homology",
+        "target": {},
+        "constraints": {"max_sequence_identity": 0.3},
+        "objectives": ["novelty"],
+        "output_requirements": {"top_n": 20},
+        "steps": [
+            {
+                "step_id": "S1",
+                "capability": "remote_homology_search",
+                "depends_on": [],
+                "parameters": {},
+            }
+        ],
+        "missing_information": ["query protein sequence"],
+    }
+    created = request(
+        "POST",
+        "/api/harness/run",
+        json={"query": "Find remote homologs", "agent_request": agent_request},
+    )
+    assert created.status_code == 200
+    status = request("GET", f"/api/harness/runs/{created.json()['run_id']}")
+    assert status.status_code == 200
+    assert status.json()["status"] == "WAITING_FOR_INPUT"
+    assert status.json()["candidate_count"] == 0
+
+
+def test_harness_api_rejects_server_paths() -> None:
+    response = request(
+        "POST",
+        "/api/harness/run",
+        json={
+            "query": "Search this structure",
+            "agent_request": {
+                "task_type": "structure_search",
+                "target": {"structure_file": "/etc/passwd"},
+                "constraints": {},
+                "objectives": ["structure_similarity"],
+                "output_requirements": {"top_n": 10},
+                "steps": [
+                    {
+                        "step_id": "S1",
+                        "capability": "structure_similarity",
+                        "depends_on": [],
+                        "parameters": {},
+                    }
+                ],
+                "missing_information": [],
+            },
+        },
+    )
+    assert response.status_code == 422
+    assert "filesystem paths" in response.json()["detail"]

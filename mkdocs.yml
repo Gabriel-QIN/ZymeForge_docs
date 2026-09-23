@@ -54,6 +54,7 @@ nav:
       - Gap analysis: development/GAP_ANALYSIS.md
       - Roadmap: development/DEVELOPMENT_ROADMAP.md
   - Workflows:
+      - Harness V1: workflows/harness-v1.md
       - Reaction-to-enzyme mining: workflows/reaction-mining.md
       - Protein similarity retrieval: workflows/similarity-retrieval.md
       - Structure prediction and post-screening: workflows/structure-postscreening.md
