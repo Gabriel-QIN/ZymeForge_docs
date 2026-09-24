@@ -1,4 +1,6 @@
 import asyncio
+import json
+from pathlib import Path
 
 import httpx
 
@@ -46,10 +48,14 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
     structure_prediction = next(
         item for item in payload["registries"] if item["id"] == "structure-prediction"
     )
-    assert reaction["count"] == 2
-    assert {tool["name"] for tool in reaction["tools"]} == {
+    assert reaction["count"] == 6
+    assert {tool["name"] for tool in reaction["tools"]} >= {
         "Reaction-to-Enzyme Mining",
         "Substrate-to-Enzyme Mining",
+        "Exact Reaction Search",
+        "Reaction Similarity Search",
+        "Reaction-to-EC",
+        "Direct Reaction-to-Enzyme",
     }
     assert {tool["name"] for tool in structure["tools"]} >= {
         "GraphEC-AS",
@@ -78,6 +84,27 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
         "ESMFold Fast Screening",
         "MolProbity Structure QC",
     }
+    evidence = next(item for item in payload["registries"] if item["id"] == "evidence-fusion")
+    output = next(item for item in payload["registries"] if item["id"] == "output")
+    assert {tool["name"] for tool in evidence["tools"]} >= {
+        "Weighted Evidence Fusion",
+        "Reciprocal Rank Fusion",
+        "ZymeScore Candidate Ranking",
+    }
+    assert {tool["name"] for tool in output["tools"]} >= {
+        "JSON Result Writer",
+        "Candidate TSV Writer",
+        "Harness Run Artifacts",
+    }
+
+
+def test_static_registry_snapshot_matches_live_catalog() -> None:
+    snapshot = json.loads(
+        Path("docs/data/registry_snapshot.json").read_text(encoding="utf-8")
+    )
+    live = request("GET", "/api/registries").json()["registries"]
+    assert snapshot["registries"] == live
+    assert all(group["count"] > 0 for group in live)
 
 
 def test_engineering_tool_pages_use_dedicated_endpoints() -> None:

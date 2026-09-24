@@ -27,6 +27,7 @@
   const nav = root.querySelector("#zf-registry-links");
   const sections = root.querySelector("#zf-registry-sections");
   const queryApi = new URLSearchParams(window.location.search).get("api") || "";
+  const snapshotUrl = root.dataset.snapshotUrl || "";
   let storedApi = queryApi || root.dataset.defaultApi || "";
   try { storedApi = storedApi || window.localStorage.getItem("zymeforge-api-url") || ""; } catch (_) { /* storage can be disabled */ }
   apiInput.value = storedApi;
@@ -64,8 +65,25 @@
     }
   }
 
+  async function refreshSnapshot() {
+    if (!snapshotUrl) return;
+    try {
+      const response = await fetch(snapshotUrl, { headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      if (Array.isArray(payload.registries)) {
+        snapshot.splice(0, snapshot.length, ...payload.registries);
+        render(snapshot);
+        if (!apiBase()) status.textContent = "Showing the generated registry snapshot";
+      }
+    } catch (error) {
+      status.textContent = `Snapshot unavailable (${error.message})`;
+    }
+  }
+
   connect.addEventListener("click", refresh);
   render(snapshot);
+  refreshSnapshot();
 
   const form = root.querySelector("#zf-reaction-form");
   const output = root.querySelector("#zf-reaction-output");

@@ -2,7 +2,7 @@
 
 ZymePage is the browser-facing catalog for ZymeForge. Registry metadata is available on this static page immediately; when a ZymeForge API URL is connected, the catalog refreshes from the live `/api/registries` endpoint and reaction mining can be run from the same page.
 
-<div id="zymepage-catalog" class="zf-registry-app" data-default-api="">
+<div id="zymepage-catalog" class="zf-registry-app" data-default-api="" data-snapshot-url="../data/registry_snapshot.json">
   <div class="zf-catalog-head">
     <div>
       <span class="zf-kicker">ZymePage · Registry catalog V1</span>

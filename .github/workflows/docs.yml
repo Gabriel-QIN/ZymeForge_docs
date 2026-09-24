@@ -28,6 +28,7 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: python -m pip install --index-url https://pypi.org/simple ".[docs]"
+      - run: python -m json.tool docs/data/registry_snapshot.json > /dev/null
       - run: mkdocs build --strict
       - uses: actions/upload-pages-artifact@v5
         with:

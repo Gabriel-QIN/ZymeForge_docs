@@ -1,0 +1,1613 @@
+{
+  "schema_version": "1.0.0",
+  "registries": [
+    {
+      "id": "reaction-mining",
+      "label": "Reaction Mining",
+      "registries": [
+        "reaction_database",
+        "reaction_encoder",
+        "reaction_search",
+        "reaction2ec",
+        "reaction2enzyme",
+        "substrate2enzyme"
+      ],
+      "intro": "Start from substrates, products, reaction SMILES, EC numbers, or names and retrieve enzyme candidates.",
+      "tools": [
+        {
+          "id": "catalog--reaction2enzyme",
+          "name": "Direct Reaction-to-Enzyme",
+          "plugin": "catalog_r2enzyme",
+          "version": "1.0.0",
+          "task": "reaction_to_enzyme",
+          "category": "Reaction mining",
+          "introduction": "Retrieve proteins directly from reaction-conditioned evidence.",
+          "description": "Runnable catalog baseline and extension point for CLIP-style retrieval.",
+          "role": "retrieval",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "normalized_reaction",
+            "protein_database"
+          ],
+          "outputs": [
+            "protein_hits"
+          ],
+          "capability": "reaction.to_enzyme",
+          "registry": "reaction2enzyme",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "provider",
+          "endpoint": "/api/reactions/mine"
+        },
+        {
+          "id": "local-exact--reaction-search",
+          "name": "Exact Reaction Search",
+          "plugin": "local_exact",
+          "version": "1.0.0",
+          "task": "reaction_search",
+          "category": "Reaction mining",
+          "introduction": "Resolve exact normalized reactions to annotated enzyme records.",
+          "description": "The runnable local baseline behind the exact-reaction Harness route.",
+          "role": "retrieval",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "normalized_reaction"
+          ],
+          "outputs": [
+            "reaction_hits",
+            "candidate_enzymes"
+          ],
+          "capability": "reaction.search",
+          "registry": "reaction_search",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "provider",
+          "endpoint": "/api/reactions/mine"
+        },
+        {
+          "id": "reaction-similarity--search",
+          "name": "Reaction Similarity Search",
+          "plugin": "local_ngram_similarity",
+          "version": "1.0.0",
+          "task": "reaction_search",
+          "category": "Reaction mining",
+          "introduction": "Retrieve chemically related reaction records before enzyme expansion.",
+          "description": "Runnable lexical baseline with a stable route for DRFP/RXNFP/CGR providers.",
+          "role": "retrieval",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "normalized_reaction"
+          ],
+          "outputs": [
+            "reaction_hits",
+            "candidate_enzymes"
+          ],
+          "capability": "reaction.search",
+          "registry": "reaction_search",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "provider",
+          "endpoint": "/api/reactions/mine"
+        },
+        {
+          "id": "catalog--reaction2ec",
+          "name": "Reaction-to-EC",
+          "plugin": "catalog_r2ec",
+          "version": "1.0.0",
+          "task": "reaction_to_ec",
+          "category": "Reaction mining",
+          "introduction": "Infer candidate EC classes from annotated related reactions.",
+          "description": "Runnable catalog baseline and extension point for learned reaction-to-EC models.",
+          "role": "prediction",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "normalized_reaction"
+          ],
+          "outputs": [
+            "ec_hits"
+          ],
+          "capability": "reaction.to_ec",
+          "registry": "reaction2ec",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "provider",
+          "endpoint": "/api/reactions/mine"
+        },
+        {
+          "id": "reaction-to-enzyme--mining",
+          "name": "Reaction-to-Enzyme Mining",
+          "plugin": "reaction_mining",
+          "version": "workflow-1.0",
+          "task": "reaction_mining",
+          "category": "Reaction mining",
+          "introduction": "Search exact and similar reactions, infer EC classes, and rank enzyme candidates.",
+          "description": "Runs the ZymeForge reaction standardizer, exact search, similarity search, reaction-to-EC, direct reaction-to-enzyme retrieval, and evidence fusion workflow.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "reaction"
+          ],
+          "outputs": [
+            "ranked_candidates",
+            "evidence",
+            "zyme_score"
+          ],
+          "capability": "reaction.to_enzyme",
+          "registry": "reaction2enzyme",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "workflow",
+          "endpoint": "/api/reactions/mine"
+        },
+        {
+          "id": "substrate-to-enzyme--mining",
+          "name": "Substrate-to-Enzyme Mining",
+          "plugin": "substrate_discovery",
+          "version": "workflow-1.0",
+          "task": "reaction_mining",
+          "category": "Reaction mining",
+          "introduction": "Resolve SMILES, InChI, InChIKey, or names and retrieve linked enzymes.",
+          "description": "Runs the configured substrate-to-enzyme provider and returns normalized candidate, EC, reaction, confidence, source, and provenance fields.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "query"
+          ],
+          "outputs": [
+            "candidate_enzymes",
+            "predicted_ec",
+            "confidence",
+            "provenance"
+          ],
+          "capability": "substrate.to_enzyme",
+          "registry": "substrate2enzyme",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "workflow",
+          "endpoint": "/api/substrates/mine"
+        }
+      ],
+      "count": 6
+    },
+    {
+      "id": "sequence-search",
+      "label": "Sequence Search",
+      "registries": [
+        "sequence_search"
+      ],
+      "intro": "Search sequence space with alignment, profile, and protein language model evidence.",
+      "tools": [
+        {
+          "id": "dhr--similarity-retrieval",
+          "name": "DHR Retrieval",
+          "plugin": "dhr",
+          "version": "official-v2",
+          "task": "protein_similarity",
+          "category": "Sequence search",
+          "introduction": "Retrieve remote homologs with dedicated asymmetric encoders.",
+          "description": "Official DHR query encoder against target-encoder database vectors.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "sequence"
+          ],
+          "outputs": [
+            "similarity_hits"
+          ],
+          "capability": "sequence.search",
+          "registry": "sequence_search",
+          "requires_gpu": true,
+          "citation": "10.1038/s41587-024-02353-6",
+          "license": "Apache-2.0",
+          "available": false,
+          "kind": "retrieval",
+          "endpoint": "/api/similarity/search"
+        },
+        {
+          "id": "esm2--similarity-retrieval",
+          "name": "ESM-2 Retrieval",
+          "plugin": "esm2_650m",
+          "version": "1.0.0",
+          "task": "protein_similarity",
+          "category": "Sequence search",
+          "introduction": "Retrieve proteins by ESM-2 sequence-semantic similarity.",
+          "description": "Batched 650M embeddings, content cache, and Flat/HNSW retrieval.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "sequence"
+          ],
+          "outputs": [
+            "similarity_hits"
+          ],
+          "capability": "sequence.search",
+          "registry": "sequence_search",
+          "requires_gpu": true,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": false,
+          "kind": "retrieval",
+          "endpoint": "/api/similarity/search"
+        },
+        {
+          "id": "protrek--similarity-retrieval",
+          "name": "ProTrek Retrieval",
+          "plugin": "protrek_650m",
+          "version": "1.0.0",
+          "task": "protein_similarity",
+          "category": "Sequence search",
+          "introduction": "Search proteins from sequence, structure, or natural-language text.",
+          "description": "Tri-modal ProTrek shared-space retrieval with modality provenance.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "sequence",
+            "structure_pdb",
+            "text"
+          ],
+          "outputs": [
+            "similarity_hits"
+          ],
+          "capability": "sequence.search",
+          "registry": "sequence_search",
+          "requires_gpu": true,
+          "citation": null,
+          "license": "MIT",
+          "available": false,
+          "kind": "retrieval",
+          "endpoint": "/api/similarity/search"
+        },
+        {
+          "id": "tmvec--similarity-retrieval",
+          "name": "TM-Vec Retrieval",
+          "plugin": "tmvec",
+          "version": "1.0.0",
+          "task": "protein_similarity",
+          "category": "Sequence search",
+          "introduction": "Find structural neighbors directly from protein sequence.",
+          "description": "Published ProtT5-to-TM-Vec 512D structure-oriented retrieval.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "sequence"
+          ],
+          "outputs": [
+            "similarity_hits"
+          ],
+          "capability": "sequence.search",
+          "registry": "sequence_search",
+          "requires_gpu": true,
+          "citation": "10.1038/s41587-023-01917-2",
+          "license": "BSD-3-Clause",
+          "available": false,
+          "kind": "retrieval",
+          "endpoint": "/api/similarity/search"
+        }
+      ],
+      "count": 4
+    },
+    {
+      "id": "structure-search",
+      "label": "Structure Search",
+      "registries": [
+        "structure_search",
+        "active_site_search",
+        "structure_comparison",
+        "active_site_analysis",
+        "ligand_analysis"
+      ],
+      "intro": "Compare global folds and local catalytic geometry to recover remote enzyme relationships.",
+      "tools": [
+        {
+          "id": "active-site--geometry-validation",
+          "name": "Active-site Geometry Validation",
+          "plugin": "active_site_geometry",
+          "version": "1.0.0",
+          "task": "active_site_validation",
+          "category": "Structure search",
+          "introduction": "Compare catalytic residues and pocket geometry independently of global fold.",
+          "description": "Returns catalytic RMSD, distances, angles, conservation, and local pLDDT.",
+          "role": "validation",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "query_structure",
+            "reference_structure",
+            "catalytic_residues"
+          ],
+          "outputs": [
+            "active_site_rmsd",
+            "pocket_rmsd",
+            "geometry"
+          ],
+          "capability": "structure.active_site",
+          "registry": "active_site_analysis",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "structure",
+          "endpoint": "/api/structures/active-site"
+        },
+        {
+          "id": "dali--structural-validation",
+          "name": "DALI Validation",
+          "plugin": "dali",
+          "version": "adapter-1.0",
+          "task": "structural_validation",
+          "category": "Structure search",
+          "introduction": "Validate only the top retrieved structures using DALI Z-scores.",
+          "description": "Returns Z-score, RMSD, aligned length, identity, and protein lengths.",
+          "role": "validation",
+          "runtime": "external-binary",
+          "inputs": [
+            "structure_pdb",
+            "candidate_structures"
+          ],
+          "outputs": [
+            "dali_results"
+          ],
+          "capability": "structure.search",
+          "registry": "structure_search",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": false,
+          "kind": "retrieval",
+          "endpoint": "/api/similarity/search"
+        },
+        {
+          "id": "ec-lmgraph--catalytic-site-prediction",
+          "name": "EC-LMGraph",
+          "plugin": "ec_lmgraph",
+          "version": "adapter-1.0",
+          "task": "catalytic_site_prediction",
+          "category": "Catalytic site",
+          "description": "EC-LMGraph catalytic-site prediction adapter.",
+          "introduction": "Identify residues and local geometry that support catalysis.",
+          "role": "parallel",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence",
+            "structure"
+          ],
+          "outputs": [
+            "residue_positions",
+            "residue_scores"
+          ],
+          "capability": "active_site.search",
+          "registry": "active_site_search",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/ec-lmgraph--catalytic-site-prediction/predict"
+        },
+        {
+          "id": "foldseek--similarity-retrieval",
+          "name": "Foldseek Retrieval",
+          "plugin": "foldseek",
+          "version": "adapter-1.0",
+          "task": "protein_similarity",
+          "category": "Structure search",
+          "introduction": "Search structures by 3Di and amino-acid local alignment.",
+          "description": "Preserves identity, coverage, E-value, bit score, TM-scores, and lDDT.",
+          "role": "primary",
+          "runtime": "external-binary",
+          "inputs": [
+            "structure_pdb"
+          ],
+          "outputs": [
+            "similarity_hits"
+          ],
+          "capability": "structure.search",
+          "registry": "structure_search",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": false,
+          "kind": "retrieval",
+          "endpoint": "/api/similarity/search"
+        },
+        {
+          "id": "graphec-as--catalytic-site-prediction",
+          "name": "GraphEC-AS",
+          "plugin": "graphec_as",
+          "version": "adapter-1.0",
+          "task": "catalytic_site_prediction",
+          "category": "Catalytic site",
+          "description": "GraphEC-AS catalytic-site prediction adapter.",
+          "introduction": "Identify residues and local geometry that support catalysis.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence",
+            "structure"
+          ],
+          "outputs": [
+            "residue_positions",
+            "residue_scores"
+          ],
+          "capability": "active_site.search",
+          "registry": "active_site_search",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/graphec-as--catalytic-site-prediction/predict"
+        },
+        {
+          "id": "ligand--geometry-analysis",
+          "name": "Ligand and Metal Geometry Analysis",
+          "plugin": "ligand_geometry",
+          "version": "1.0.0",
+          "task": "ligand_analysis",
+          "category": "Structure search",
+          "introduction": "Inspect ligand contacts, clashes, hydrogen bonds, and metal coordination.",
+          "description": "Keeps contact residues and external pocket-volume/BSA evidence separate.",
+          "role": "validation",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "structure",
+            "ligand_id"
+          ],
+          "outputs": [
+            "contacts",
+            "clashes",
+            "metal_geometry",
+            "ligand_rmsd"
+          ],
+          "capability": "structure.ligand_analysis",
+          "registry": "ligand_analysis",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "structure",
+          "endpoint": "/api/structures/ligand"
+        },
+        {
+          "id": "proteinmpnn--similarity-retrieval",
+          "name": "ProteinMPNN Encoder Retrieval",
+          "plugin": "proteinmpnn_encoder_experimental",
+          "version": "1.0.0",
+          "task": "protein_similarity",
+          "category": "Structure search",
+          "introduction": "Experimental retrieval from final ProteinMPNN backbone encoder states.",
+          "description": "Chain-level, mean-pooled 128D backbone representation.",
+          "role": "experimental",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "structure_pdb"
+          ],
+          "outputs": [
+            "similarity_hits"
+          ],
+          "capability": "structure.search",
+          "registry": "structure_search",
+          "requires_gpu": true,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": false,
+          "kind": "retrieval",
+          "endpoint": "/api/similarity/search"
+        },
+        {
+          "id": "saprot--similarity-retrieval",
+          "name": "SaProt Retrieval",
+          "plugin": "saprot_650m",
+          "version": "1.0.0",
+          "task": "protein_similarity",
+          "category": "Structure search",
+          "introduction": "Retrieve proteins using amino-acid and 3Di structural context.",
+          "description": "Structure-aware SaProt embeddings with explicit structure provenance.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "sequence",
+            "structural_tokens"
+          ],
+          "outputs": [
+            "similarity_hits"
+          ],
+          "capability": "structure.search",
+          "registry": "structure_search",
+          "requires_gpu": true,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": false,
+          "kind": "retrieval",
+          "endpoint": "/api/similarity/search"
+        },
+        {
+          "id": "usalign--structure-comparison",
+          "name": "US-align / TM-align Comparison",
+          "plugin": "usalign",
+          "version": "cli-wrapper-1.0",
+          "task": "structure_comparison",
+          "category": "Structure search",
+          "introduction": "Validate global fold preservation with pairwise structural alignment.",
+          "description": "Returns both normalized TM-scores, RMSD, aligned length, and identity.",
+          "role": "validation",
+          "runtime": "external-binary",
+          "inputs": [
+            "query_structure",
+            "target_structure"
+          ],
+          "outputs": [
+            "tm_score",
+            "rmsd",
+            "aligned_length"
+          ],
+          "capability": "structure.comparison",
+          "registry": "structure_comparison",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "structure",
+          "endpoint": "/api/structures/compare"
+        }
+      ],
+      "count": 9
+    },
+    {
+      "id": "function-prediction",
+      "label": "Function Prediction",
+      "registries": [
+        "function_predictor",
+        "substrate_compatibility",
+        "kinetics_predictor",
+        "stability_predictor",
+        "ph_predictor",
+        "solubility_predictor",
+        "localization_predictor",
+        "expression_predictor",
+        "cofactor_predictor",
+        "developability_predictor",
+        "docking"
+      ],
+      "intro": "Profile EC function, catalytic sites, substrate compatibility, kinetics, stability, and developability.",
+      "tools": [
+        {
+          "id": "clean--ec-prediction",
+          "name": "CLEAN",
+          "plugin": "clean",
+          "version": "adapter-1.0",
+          "task": "ec_prediction",
+          "category": "EC & function",
+          "description": "CLEAN enzyme function and EC prediction adapter.",
+          "introduction": "Predict EC numbers and enzyme function from a protein sequence.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "ec_number",
+            "score"
+          ],
+          "capability": "prediction.function",
+          "registry": "function_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/clean--ec-prediction/predict"
+        },
+        {
+          "id": "catapro--kinetics-prediction",
+          "name": "CataPro",
+          "plugin": "catapro",
+          "version": "adapter-1.0",
+          "task": "kinetics_prediction",
+          "category": "Kinetics",
+          "description": "CataPro kcat, Km, and catalytic-efficiency prediction adapter.",
+          "introduction": "Estimate catalytic parameters for an enzyme-substrate pair.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence",
+            "substrate_smiles"
+          ],
+          "outputs": [
+            "kcat",
+            "km",
+            "kcat_per_km"
+          ],
+          "capability": "prediction.kinetics",
+          "registry": "kinetics_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/catapro--kinetics-prediction/predict"
+        },
+        {
+          "id": "discode--cofactor-prediction",
+          "name": "DISCODE",
+          "plugin": "discode",
+          "version": "adapter-1.0",
+          "task": "cofactor_prediction",
+          "category": "Cofactor specificity",
+          "description": "DISCODE cofactor-specificity prediction adapter.",
+          "introduction": "Predict cofactor preference such as NAD, NADP, or FAD.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "cofactor",
+            "preference_probability"
+          ],
+          "capability": "prediction.cofactor",
+          "registry": "cofactor_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/discode--cofactor-prediction/predict"
+        },
+        {
+          "id": "deeploc--localization-prediction",
+          "name": "DeepLoc",
+          "plugin": "deeploc",
+          "version": "adapter-1.0",
+          "task": "localization_prediction",
+          "category": "Developability",
+          "description": "DeepLoc subcellular-localization prediction adapter.",
+          "introduction": "Predict cellular localization for developability triage.",
+          "role": "parallel",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "localization",
+            "probability"
+          ],
+          "capability": "prediction.developability",
+          "registry": "developability_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/deeploc--localization-prediction/predict"
+        },
+        {
+          "id": "deepstabp--thermostability-prediction",
+          "name": "DeepSTABp",
+          "plugin": "deepstabp",
+          "version": "adapter-1.0",
+          "task": "thermostability_prediction",
+          "category": "Thermostability",
+          "description": "DeepSTABp protein melting-temperature prediction adapter.",
+          "introduction": "Estimate melting temperature or thermostability probability.",
+          "role": "parallel",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "melting_temperature"
+          ],
+          "capability": "prediction.stability",
+          "registry": "stability_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/deepstabp--thermostability-prediction/predict"
+        },
+        {
+          "id": "deeptmhmm--transmembrane-prediction",
+          "name": "DeepTMHMM",
+          "plugin": "deeptmhmm",
+          "version": "adapter-1.0",
+          "task": "transmembrane_prediction",
+          "category": "Developability",
+          "description": "DeepTMHMM transmembrane-topology prediction adapter.",
+          "introduction": "Detect transmembrane regions and topology.",
+          "role": "parallel",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "topology",
+            "transmembrane_regions"
+          ],
+          "capability": "prediction.developability",
+          "registry": "developability_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/deeptmhmm--transmembrane-prediction/predict"
+        },
+        {
+          "id": "ec-lmgraph--ec-prediction",
+          "name": "EC-LMGraph",
+          "plugin": "ec_lmgraph",
+          "version": "adapter-1.0",
+          "task": "ec_prediction",
+          "category": "EC & function",
+          "description": "EC-LMGraph EC and enzyme-function prediction adapter.",
+          "introduction": "Predict EC numbers and enzyme function from a protein sequence.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "ec_number",
+            "score"
+          ],
+          "capability": "prediction.function",
+          "registry": "function_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/ec-lmgraph--ec-prediction/predict"
+        },
+        {
+          "id": "esp--substrate-compatibility",
+          "name": "ESP",
+          "plugin": "esp",
+          "version": "adapter-1.0",
+          "task": "substrate_compatibility",
+          "category": "Substrate specificity",
+          "description": "ESP enzyme\u2013substrate pair prediction adapter.",
+          "introduction": "Estimate whether a candidate enzyme can accept a target substrate.",
+          "role": "parallel",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence",
+            "substrate_smiles"
+          ],
+          "outputs": [
+            "compatibility_probability"
+          ],
+          "capability": "prediction.substrate_compatibility",
+          "registry": "substrate_compatibility",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/esp--substrate-compatibility/predict"
+        },
+        {
+          "id": "ezspecificity--substrate-compatibility",
+          "name": "EZSpecificity",
+          "plugin": "ezspecificity",
+          "version": "adapter-1.0",
+          "task": "substrate_compatibility",
+          "category": "Substrate specificity",
+          "description": "EZSpecificity substrate-specificity prediction adapter.",
+          "introduction": "Estimate whether a candidate enzyme can accept a target substrate.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence",
+            "substrate_smiles"
+          ],
+          "outputs": [
+            "compatibility_probability"
+          ],
+          "capability": "prediction.substrate_compatibility",
+          "registry": "substrate_compatibility",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/ezspecificity--substrate-compatibility/predict"
+        },
+        {
+          "id": "ephod--ph-prediction",
+          "name": "EpHod",
+          "plugin": "ephod",
+          "version": "adapter-1.0",
+          "task": "ph_prediction",
+          "category": "Optimal pH",
+          "description": "EpHod enzyme optimum-pH prediction adapter.",
+          "introduction": "Predict the pH optimum for enzyme activity.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "optimum_ph"
+          ],
+          "capability": "prediction.ph",
+          "registry": "ph_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/ephod--ph-prediction/predict"
+        },
+        {
+          "id": "hit-ec--ec-prediction",
+          "name": "HIT-EC",
+          "plugin": "hit_ec",
+          "version": "adapter-1.0",
+          "task": "ec_prediction",
+          "category": "EC & function",
+          "description": "HIT-EC hierarchical enzyme function prediction adapter.",
+          "introduction": "Predict EC numbers and enzyme function from a protein sequence.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "ec_number",
+            "score"
+          ],
+          "capability": "prediction.function",
+          "registry": "function_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/hit-ec--ec-prediction/predict"
+        },
+        {
+          "id": "insight--cofactor-prediction",
+          "name": "INSIGHT",
+          "plugin": "insight",
+          "version": "adapter-1.0",
+          "task": "cofactor_prediction",
+          "category": "Cofactor specificity",
+          "description": "INSIGHT cofactor-specificity prediction adapter.",
+          "introduction": "Predict cofactor preference such as NAD, NADP, or FAD.",
+          "role": "parallel",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "cofactor",
+            "preference_probability"
+          ],
+          "capability": "prediction.cofactor",
+          "registry": "cofactor_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/insight--cofactor-prediction/predict"
+        },
+        {
+          "id": "netsolp--solubility-prediction",
+          "name": "NetSolP",
+          "plugin": "netsolp",
+          "version": "adapter-1.0",
+          "task": "solubility_prediction",
+          "category": "Solubility",
+          "description": "NetSolP protein solubility prediction adapter.",
+          "introduction": "Estimate whether a protein is likely to remain soluble.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "solubility_probability"
+          ],
+          "capability": "prediction.solubility",
+          "registry": "solubility_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/netsolp--solubility-prediction/predict"
+        },
+        {
+          "id": "ophpred--ph-prediction",
+          "name": "OphPred",
+          "plugin": "ophpred",
+          "version": "adapter-1.0",
+          "task": "ph_prediction",
+          "category": "Optimal pH",
+          "description": "OphPred optimum-pH prediction adapter.",
+          "introduction": "Predict the pH optimum for enzyme activity.",
+          "role": "parallel",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "optimum_ph"
+          ],
+          "capability": "prediction.ph",
+          "registry": "ph_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/ophpred--ph-prediction/predict"
+        },
+        {
+          "id": "prosmith--substrate-compatibility",
+          "name": "ProSmith",
+          "plugin": "prosmith",
+          "version": "adapter-1.0",
+          "task": "substrate_compatibility",
+          "category": "Substrate specificity",
+          "description": "ProSmith enzyme\u2013substrate compatibility adapter.",
+          "introduction": "Estimate whether a candidate enzyme can accept a target substrate.",
+          "role": "parallel",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence",
+            "substrate_smiles"
+          ],
+          "outputs": [
+            "compatibility_probability"
+          ],
+          "capability": "prediction.substrate_compatibility",
+          "registry": "substrate_compatibility",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/prosmith--substrate-compatibility/predict"
+        },
+        {
+          "id": "signalp--signal-peptide-prediction",
+          "name": "SignalP",
+          "plugin": "signalp",
+          "version": "adapter-1.0",
+          "task": "signal_peptide_prediction",
+          "category": "Developability",
+          "description": "SignalP signal-peptide prediction adapter.",
+          "introduction": "Detect signal peptides and likely cleavage sites.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "signal_peptide",
+            "cleavage_site",
+            "probability"
+          ],
+          "capability": "prediction.developability",
+          "registry": "developability_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/signalp--signal-peptide-prediction/predict"
+        },
+        {
+          "id": "temberture--thermostability-prediction",
+          "name": "TemBERTure",
+          "plugin": "temberture",
+          "version": "adapter-1.0",
+          "task": "thermostability_prediction",
+          "category": "Thermostability",
+          "description": "TemBERTure protein thermostability prediction adapter.",
+          "introduction": "Estimate melting temperature or thermostability probability.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "melting_temperature",
+            "thermostability_class"
+          ],
+          "capability": "prediction.stability",
+          "registry": "stability_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/temberture--thermostability-prediction/predict"
+        },
+        {
+          "id": "temstapro--thermostability-prediction",
+          "name": "TemStaPro",
+          "plugin": "temstapro",
+          "version": "adapter-1.0",
+          "task": "thermostability_prediction",
+          "category": "Thermostability",
+          "description": "TemStaPro protein thermostability prediction adapter.",
+          "introduction": "Estimate melting temperature or thermostability probability.",
+          "role": "parallel",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence"
+          ],
+          "outputs": [
+            "thermostable_probability"
+          ],
+          "capability": "prediction.stability",
+          "registry": "stability_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/temstapro--thermostability-prediction/predict"
+        },
+        {
+          "id": "turnup--kinetics-prediction",
+          "name": "TurNuP",
+          "plugin": "turnup",
+          "version": "adapter-1.0",
+          "task": "kinetics_prediction",
+          "category": "Kinetics",
+          "description": "TurNuP enzyme turnover-number prediction adapter.",
+          "introduction": "Estimate catalytic parameters for an enzyme-substrate pair.",
+          "role": "parallel",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence",
+            "substrate_smiles"
+          ],
+          "outputs": [
+            "kcat"
+          ],
+          "capability": "prediction.kinetics",
+          "registry": "kinetics_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/turnup--kinetics-prediction/predict"
+        },
+        {
+          "id": "unikp--kinetics-prediction",
+          "name": "UniKP",
+          "plugin": "unikp",
+          "version": "adapter-1.0",
+          "task": "kinetics_prediction",
+          "category": "Kinetics",
+          "description": "UniKP enzyme kinetic-parameter prediction adapter.",
+          "introduction": "Estimate catalytic parameters for an enzyme-substrate pair.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_sequence",
+            "substrate_smiles"
+          ],
+          "outputs": [
+            "kcat",
+            "km",
+            "kcat_per_km"
+          ],
+          "capability": "prediction.kinetics",
+          "registry": "kinetics_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/unikp--kinetics-prediction/predict"
+        }
+      ],
+      "count": 20
+    },
+    {
+      "id": "structure-prediction",
+      "label": "Structure Prediction",
+      "registries": [
+        "structure_predictor",
+        "structure_quality"
+      ],
+      "intro": "Generate protein and complex structures for pocket inspection, docking, and consistency checks.",
+      "tools": [
+        {
+          "id": "alphafold3--structure-prediction",
+          "name": "AlphaFold 3 Local Prediction",
+          "plugin": "alphafold3",
+          "version": "official-local-wrapper-1.0",
+          "task": "structure_prediction",
+          "category": "Structure prediction",
+          "introduction": "Local AF3 prediction for proteins, ligands, and nucleic acids.",
+          "description": "Enabled only with legally provisioned local parameters and databases.",
+          "role": "primary",
+          "runtime": "official-upstream",
+          "inputs": [
+            "sequence",
+            "ligand",
+            "cofactors"
+          ],
+          "outputs": [
+            "structure",
+            "plddt",
+            "pae",
+            "ptm",
+            "iptm"
+          ],
+          "capability": "structure.predictor",
+          "registry": "structure_predictor",
+          "requires_gpu": true,
+          "citation": "Abramson et al., Nature 2024",
+          "license": "AlphaFold 3 terms apply",
+          "available": false,
+          "kind": "structure",
+          "endpoint": "/api/structures/predict"
+        },
+        {
+          "id": "boltz2--structure-prediction",
+          "name": "Boltz-2 Structure Prediction",
+          "plugin": "boltz2",
+          "version": "official-cli-wrapper-1.0",
+          "task": "structure_prediction",
+          "category": "Structure prediction",
+          "introduction": "Predict proteins, complexes, and protein-ligand structures with Boltz-2.",
+          "description": "Preserves confidence, complex confidence, affinity output, and provenance.",
+          "role": "primary",
+          "runtime": "official-upstream",
+          "inputs": [
+            "sequence",
+            "ligand",
+            "cofactors"
+          ],
+          "outputs": [
+            "structure",
+            "plddt",
+            "ptm",
+            "iptm",
+            "affinity"
+          ],
+          "capability": "structure.predictor",
+          "registry": "structure_predictor",
+          "requires_gpu": true,
+          "citation": "Boltz-2",
+          "license": "MIT; model terms apply",
+          "available": false,
+          "kind": "structure",
+          "endpoint": "/api/structures/predict"
+        },
+        {
+          "id": "esmfold--structure-prediction",
+          "name": "ESMFold Fast Screening",
+          "plugin": "esmfold",
+          "version": "fair-esm-wrapper-1.0",
+          "task": "structure_prediction",
+          "category": "Structure prediction",
+          "introduction": "Fast single-protein prediction for large candidate screens.",
+          "description": "Retains mean and per-residue pLDDT, pTM, runtime, and checkpoint hash.",
+          "role": "screening",
+          "runtime": "official-upstream",
+          "inputs": [
+            "sequence"
+          ],
+          "outputs": [
+            "structure",
+            "mean_plddt",
+            "per_residue_plddt",
+            "ptm"
+          ],
+          "capability": "structure.predictor",
+          "registry": "structure_predictor",
+          "requires_gpu": true,
+          "citation": "Lin et al., Science 2023",
+          "license": "MIT",
+          "available": false,
+          "kind": "structure",
+          "endpoint": "/api/structures/predict"
+        },
+        {
+          "id": "molprobity--structure-quality",
+          "name": "MolProbity Structure QC",
+          "plugin": "molprobity",
+          "version": "cli-wrapper-1.0",
+          "task": "structure_quality",
+          "category": "Structure prediction",
+          "introduction": "Run mature structural quality checks after prediction.",
+          "description": "Reports clashes, Ramachandran outliers, geometry errors, and chain issues.",
+          "role": "validation",
+          "runtime": "external-binary",
+          "inputs": [
+            "structure"
+          ],
+          "outputs": [
+            "clash_score",
+            "ramachandran_outliers",
+            "geometry_errors"
+          ],
+          "capability": "structure.quality",
+          "registry": "structure_quality",
+          "requires_gpu": false,
+          "citation": "MolProbity",
+          "license": null,
+          "available": false,
+          "kind": "structure",
+          "endpoint": "/api/structures/quality"
+        }
+      ],
+      "count": 4
+    },
+    {
+      "id": "engineering",
+      "label": "Engineering",
+      "registries": [
+        "mutation_site_selector",
+        "mutation_generator",
+        "mutation_predictor",
+        "mutation_optimizer",
+        "design_model"
+      ],
+      "intro": "Move from a selected enzyme to targeted mutation optimization or sequence redesign.",
+      "tools": [
+        {
+          "id": "geostab--mutation-effect-prediction",
+          "name": "GeoStab",
+          "plugin": "geostab",
+          "version": "adapter-1.0",
+          "task": "mutation_effect_prediction",
+          "category": "Mutation effects",
+          "description": "GeoStab mutation stability-effect prediction adapter.",
+          "introduction": "Estimate stability and fitness effects of a proposed mutation.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_structure",
+            "mutation"
+          ],
+          "outputs": [
+            "ddg",
+            "ddtm",
+            "fitness"
+          ],
+          "capability": "engineering.mutation.predictor",
+          "registry": "mutation_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/geostab--mutation-effect-prediction/predict"
+        },
+        {
+          "id": "ligandmpnn--sequence-redesign",
+          "name": "LigandMPNN Sequence Redesign",
+          "plugin": "ligandmpnn",
+          "version": "official-wrapper-1.0",
+          "task": "sequence_redesign",
+          "category": "Engineering",
+          "introduction": "Redesign a complete scaffold or selected pocket residues while preserving catalytic, ligand, membrane, and symmetry constraints.",
+          "description": "One official wrapper for ProteinMPNN, LigandMPNN, SolubleMPNN, global-label membrane MPNN, per-residue membrane MPNN, score.py, and side-chain packing.",
+          "role": "primary",
+          "runtime": "official-upstream",
+          "inputs": [
+            "structure_pdb",
+            "model_type",
+            "options"
+          ],
+          "outputs": [
+            "designed_sequences",
+            "mutations",
+            "scores",
+            "provenance"
+          ],
+          "capability": "engineering.redesign",
+          "registry": "design_model",
+          "requires_gpu": true,
+          "citation": "Dauparas et al., LigandMPNN",
+          "license": "MIT (upstream)",
+          "available": false,
+          "kind": "engineering",
+          "endpoint": "/api/engineering/redesign"
+        },
+        {
+          "id": "ligandmpnn--sequence-scoring",
+          "name": "LigandMPNN Sequence Scoring",
+          "plugin": "ligandmpnn",
+          "version": "official-wrapper-1.0",
+          "task": "sequence_scoring",
+          "category": "Engineering",
+          "introduction": "Compare native, mutant, and designed sequences on matched backbones and ligand contexts.",
+          "description": "Official score.py integration for autoregressive, single-AA, sequence-conditioned, and backbone-only scoring.",
+          "role": "validation",
+          "runtime": "official-upstream",
+          "inputs": [
+            "structure_pdb",
+            "sequence",
+            "scoring_mode",
+            "options"
+          ],
+          "outputs": [
+            "score",
+            "per_residue_score",
+            "provenance"
+          ],
+          "capability": "engineering.redesign",
+          "registry": "design_model",
+          "requires_gpu": true,
+          "citation": "Dauparas et al., LigandMPNN",
+          "license": "MIT (upstream)",
+          "available": false,
+          "kind": "engineering",
+          "endpoint": "/api/engineering/score"
+        },
+        {
+          "id": "thermompnn--mutation-effect-prediction",
+          "name": "ThermoMPNN",
+          "plugin": "thermompnn",
+          "version": "adapter-1.0",
+          "task": "mutation_effect_prediction",
+          "category": "Mutation effects",
+          "description": "ThermoMPNN mutation thermostability prediction adapter.",
+          "introduction": "Estimate stability and fitness effects of a proposed mutation.",
+          "role": "parallel",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "protein_structure",
+            "mutation"
+          ],
+          "outputs": [
+            "ddg",
+            "stability_probability"
+          ],
+          "capability": "engineering.mutation.predictor",
+          "registry": "mutation_predictor",
+          "requires_gpu": false,
+          "citation": null,
+          "license": null,
+          "available": false,
+          "kind": "model",
+          "endpoint": "/api/models/thermompnn--mutation-effect-prediction/predict"
+        },
+        {
+          "id": "unzipro--mutation-prediction",
+          "name": "unZipro Mutation Prediction",
+          "plugin": "unzipro",
+          "version": "official-wrapper-1.0",
+          "task": "mutation_prediction",
+          "category": "Engineering",
+          "introduction": "Prioritize function-oriented single substitutions for a selected protein.",
+          "description": "Calls official unZipro inference, preserves its native probabilities and logits, and maps ranked predictions into ZymeForge candidates.",
+          "role": "primary",
+          "runtime": "official-upstream",
+          "inputs": [
+            "sequence",
+            "structure_pdb",
+            "top_k"
+          ],
+          "outputs": [
+            "ranked_mutations",
+            "native_scores",
+            "provenance"
+          ],
+          "capability": "engineering.mutation.predictor",
+          "registry": "mutation_predictor",
+          "requires_gpu": true,
+          "citation": "unZipro",
+          "license": null,
+          "available": false,
+          "kind": "engineering",
+          "endpoint": "/api/engineering/mutations"
+        }
+      ],
+      "count": 5
+    },
+    {
+      "id": "evidence-fusion",
+      "label": "Evidence Fusion",
+      "registries": [
+        "evidence_provider",
+        "score_calibrator",
+        "fusion_model"
+      ],
+      "intro": "Calibrate heterogeneous evidence into an explainable ZymeScore and candidate ranking.",
+      "tools": [
+        {
+          "id": "rrf--similarity-fusion",
+          "name": "Reciprocal Rank Fusion",
+          "plugin": "rrf",
+          "version": "1.0.0",
+          "task": "rank_fusion",
+          "category": "Evidence fusion",
+          "introduction": "Merge independent retrieval rankings without mixing native scores.",
+          "description": "Optional RRF over canonicalized similarity hits.",
+          "role": "consensus",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "similarity_rankings"
+          ],
+          "outputs": [
+            "merged_candidates",
+            "rrf_score"
+          ],
+          "capability": "evidence.fusion",
+          "registry": "fusion_model",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "fusion",
+          "endpoint": "/api/similarity/search"
+        },
+        {
+          "id": "weighted--evidence-fusion",
+          "name": "Weighted Evidence Fusion",
+          "plugin": "weighted_calibrated_mean",
+          "version": "1.0.0",
+          "task": "evidence_fusion",
+          "category": "Evidence fusion",
+          "introduction": "Combine calibrated evidence with explicit per-channel contributions.",
+          "description": "Runnable transparent baseline used by the reaction-mining workflow.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "evidence_records"
+          ],
+          "outputs": [
+            "zyme_score",
+            "confidence",
+            "contributions"
+          ],
+          "capability": "evidence.fusion",
+          "registry": "fusion_model",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "fusion",
+          "endpoint": "/api/reactions/mine"
+        },
+        {
+          "id": "zymescore--candidate-ranking",
+          "name": "ZymeScore Candidate Ranking",
+          "plugin": "zymescore",
+          "version": "1.0.0",
+          "task": "candidate_ranking",
+          "category": "Evidence fusion",
+          "introduction": "Rank unified Candidates while preserving all source evidence.",
+          "description": "Harness candidate-ranking tool using ZymeScore or available evidence.",
+          "role": "ranking",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "candidates",
+            "evidence"
+          ],
+          "outputs": [
+            "ranked_candidates"
+          ],
+          "capability": "evidence.fusion",
+          "registry": "fusion_model",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "fusion",
+          "endpoint": "/api/harness/run"
+        }
+      ],
+      "count": 3
+    },
+    {
+      "id": "output",
+      "label": "Output",
+      "registries": [
+        "output_writer"
+      ],
+      "intro": "Export candidates, evidence, score cards, and provenance for downstream analysis.",
+      "tools": [
+        {
+          "id": "candidate-tsv--output-writer",
+          "name": "Candidate TSV Writer",
+          "plugin": "candidate_tsv",
+          "version": "1.0.0",
+          "task": "output",
+          "category": "Output",
+          "introduction": "Export flattened candidate tables for downstream analysis.",
+          "description": "Built-in tab-separated candidate writer.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "candidate_rows"
+          ],
+          "outputs": [
+            "tsv_file"
+          ],
+          "capability": "output.writer",
+          "registry": "output_writer",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "output",
+          "endpoint": null
+        },
+        {
+          "id": "harness--run-artifacts",
+          "name": "Harness Run Artifacts",
+          "plugin": "run_store",
+          "version": "1.0.0",
+          "task": "output",
+          "category": "Output",
+          "introduction": "Persist plans, tool results, candidates, provenance, and HTML reports.",
+          "description": "Reproducible seven-artifact Harness run directory.",
+          "role": "reporting",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "run_state"
+          ],
+          "outputs": [
+            "run_json",
+            "candidates_csv",
+            "provenance",
+            "report_html"
+          ],
+          "capability": "output.writer",
+          "registry": "output_writer",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "output",
+          "endpoint": "/api/harness/runs/{run_id}"
+        },
+        {
+          "id": "json--output-writer",
+          "name": "JSON Result Writer",
+          "plugin": "json",
+          "version": "1.0.0",
+          "task": "output",
+          "category": "Output",
+          "introduction": "Write complete typed results and provenance as portable JSON.",
+          "description": "Built-in output writer for workflows and APIs.",
+          "role": "primary",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "result"
+          ],
+          "outputs": [
+            "json_file"
+          ],
+          "capability": "output.writer",
+          "registry": "output_writer",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "output",
+          "endpoint": null
+        }
+      ],
+      "count": 3
+    }
+  ]
+}
