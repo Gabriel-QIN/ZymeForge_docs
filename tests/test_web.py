@@ -48,7 +48,7 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
     structure_prediction = next(
         item for item in payload["registries"] if item["id"] == "structure-prediction"
     )
-    assert reaction["count"] == 6
+    assert reaction["count"] == 8
     assert {tool["name"] for tool in reaction["tools"]} >= {
         "Reaction-to-Enzyme Mining",
         "Substrate-to-Enzyme Mining",
@@ -56,6 +56,8 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
         "Reaction Similarity Search",
         "Reaction-to-EC",
         "Direct Reaction-to-Enzyme",
+        "Rhea Reaction Database",
+        "EnzymeMap Reaction Database",
     }
     assert {tool["name"] for tool in structure["tools"]} >= {
         "GraphEC-AS",
@@ -67,6 +69,9 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
     }
     sequence = next(item for item in payload["registries"] if item["id"] == "sequence-search")
     assert {tool["name"] for tool in sequence["tools"]} == {
+        "MMseqs2 Sequence Search",
+        "phmmer Sequence Search",
+        "HHsearch Profile Search",
         "ESM-2 Retrieval",
         "TM-Vec Retrieval",
         "DHR Retrieval",
@@ -99,9 +104,7 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
 
 
 def test_static_registry_snapshot_matches_live_catalog() -> None:
-    snapshot = json.loads(
-        Path("docs/data/registry_snapshot.json").read_text(encoding="utf-8")
-    )
+    snapshot = json.loads(Path("docs/data/registry_snapshot.json").read_text(encoding="utf-8"))
     live = request("GET", "/api/registries").json()["registries"]
     assert snapshot["registries"] == live
     assert all(group["count"] > 0 for group in live)

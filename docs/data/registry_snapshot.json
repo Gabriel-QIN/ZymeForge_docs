@@ -42,6 +42,32 @@
           "endpoint": "/api/reactions/mine"
         },
         {
+          "id": "enzymemap--reaction-database",
+          "name": "EnzymeMap Reaction Database",
+          "plugin": "enzymemap",
+          "version": "ingestion-1.0",
+          "task": "reaction_database_ingestion",
+          "category": "Reaction mining",
+          "introduction": "Load standardized and atom-mapped EnzymeMap reaction tables.",
+          "description": "Auto-detects published CSV/TSV fields and records versioned checksum provenance.",
+          "role": "database",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "enzymemap_csv_or_tsv"
+          ],
+          "outputs": [
+            "reaction_database_snapshot"
+          ],
+          "capability": "database.reaction",
+          "registry": "reaction_database",
+          "requires_gpu": false,
+          "citation": "EnzymeMap",
+          "license": null,
+          "available": true,
+          "kind": "database",
+          "endpoint": null
+        },
+        {
           "id": "local-exact--reaction-search",
           "name": "Exact Reaction Search",
           "plugin": "local_exact",
@@ -150,6 +176,32 @@
           "endpoint": "/api/reactions/mine"
         },
         {
+          "id": "rhea--reaction-database",
+          "name": "Rhea Reaction Database",
+          "plugin": "rhea_tsv",
+          "version": "ingestion-1.0",
+          "task": "reaction_database_ingestion",
+          "category": "Reaction mining",
+          "introduction": "Load versioned Rhea reaction exports with EC and UniProt links.",
+          "description": "Preserves source version, checksum, row provenance, and normalized cross-links.",
+          "role": "database",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "versioned_rhea_tsv"
+          ],
+          "outputs": [
+            "reaction_database_snapshot"
+          ],
+          "capability": "database.reaction",
+          "registry": "reaction_database",
+          "requires_gpu": false,
+          "citation": "Rhea",
+          "license": "CC BY 4.0",
+          "available": true,
+          "kind": "database",
+          "endpoint": null
+        },
+        {
           "id": "substrate-to-enzyme--mining",
           "name": "Substrate-to-Enzyme Mining",
           "plugin": "substrate_discovery",
@@ -179,7 +231,7 @@
           "endpoint": "/api/substrates/mine"
         }
       ],
-      "count": 6
+      "count": 8
     },
     {
       "id": "sequence-search",
@@ -242,6 +294,60 @@
           "endpoint": "/api/similarity/search"
         },
         {
+          "id": "hhsearch--profile-search",
+          "name": "HHsearch Profile Search",
+          "plugin": "hhsearch",
+          "version": "cli-wrapper-1.0",
+          "task": "remote_homology",
+          "category": "Sequence search",
+          "introduction": "Retrieve remote homologs by profile-profile comparison.",
+          "description": "Preserves HHsearch probability, E-value, P-value, score, and aligned columns.",
+          "role": "remote homology",
+          "runtime": "external-binary",
+          "inputs": [
+            "a3m_or_hhm_profile",
+            "hhsearch_database"
+          ],
+          "outputs": [
+            "similarity_hits"
+          ],
+          "capability": "sequence.search",
+          "registry": "sequence_search",
+          "requires_gpu": false,
+          "citation": "HH-suite",
+          "license": "GPL-3.0",
+          "available": false,
+          "kind": "retrieval",
+          "endpoint": null
+        },
+        {
+          "id": "mmseqs2--sequence-search",
+          "name": "MMseqs2 Sequence Search",
+          "plugin": "mmseqs2",
+          "version": "cli-wrapper-1.0",
+          "task": "protein_similarity",
+          "category": "Sequence search",
+          "introduction": "Run high-throughput sequence alignment against a configured protein database.",
+          "description": "Returns identity, query/target coverage, E-value, bit score, and alignment length.",
+          "role": "primary",
+          "runtime": "external-binary",
+          "inputs": [
+            "sequence",
+            "protein_database"
+          ],
+          "outputs": [
+            "similarity_hits"
+          ],
+          "capability": "sequence.search",
+          "registry": "sequence_search",
+          "requires_gpu": false,
+          "citation": "MMseqs2",
+          "license": "GPL-3.0",
+          "available": true,
+          "kind": "retrieval",
+          "endpoint": "/api/similarity/search"
+        },
+        {
           "id": "protrek--similarity-retrieval",
           "name": "ProTrek Retrieval",
           "plugin": "protrek_650m",
@@ -294,9 +400,36 @@
           "available": false,
           "kind": "retrieval",
           "endpoint": "/api/similarity/search"
+        },
+        {
+          "id": "phmmer--sequence-search",
+          "name": "phmmer Sequence Search",
+          "plugin": "phmmer",
+          "version": "cli-wrapper-1.0",
+          "task": "protein_similarity",
+          "category": "Sequence search",
+          "introduction": "Search protein sequences with HMMER profile-HMM scoring.",
+          "description": "Parses domain-table output while retaining native E-values, scores, and coverage.",
+          "role": "primary",
+          "runtime": "external-binary",
+          "inputs": [
+            "sequence",
+            "protein_database"
+          ],
+          "outputs": [
+            "similarity_hits"
+          ],
+          "capability": "sequence.search",
+          "registry": "sequence_search",
+          "requires_gpu": false,
+          "citation": "HMMER",
+          "license": "BSD-3-Clause",
+          "available": false,
+          "kind": "retrieval",
+          "endpoint": "/api/similarity/search"
         }
       ],
-      "count": 4
+      "count": 7
     },
     {
       "id": "structure-search",

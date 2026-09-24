@@ -190,9 +190,7 @@ def _discovery(catalog_path: str):
 
 
 def _catalog_path() -> Path:
-    return Path(
-        os.getenv("ZYMEFORGE_CATALOG", str(REPOSITORY_DIR / "data" / "demo_catalog.json"))
-    )
+    return Path(os.getenv("ZYMEFORGE_CATALOG", str(REPOSITORY_DIR / "data" / "demo_catalog.json")))
 
 
 def _harness_root() -> Path:
@@ -270,9 +268,7 @@ def _mpnn_checkpoint(model_type: LigandMPNNModelType) -> tuple[str, Path]:
         LigandMPNNModelType.LIGAND: "checkpoint_ligand_mpnn",
         LigandMPNNModelType.SOLUBLE: "checkpoint_soluble_mpnn",
         LigandMPNNModelType.GLOBAL_MEMBRANE: "checkpoint_global_label_membrane_mpnn",
-        LigandMPNNModelType.PER_RESIDUE_MEMBRANE: (
-            "checkpoint_per_residue_label_membrane_mpnn"
-        ),
+        LigandMPNNModelType.PER_RESIDUE_MEMBRANE: ("checkpoint_per_residue_label_membrane_mpnn"),
     }[model_type]
     return field, _configured_path(variable)
 
@@ -313,9 +309,7 @@ def create_app() -> FastAPI:
     )
     application.mount("/static", StaticFiles(directory=PACKAGE_DIR / "static"), name="static")
     templates = Jinja2Templates(directory=PACKAGE_DIR / "templates")
-    docs_url = os.getenv(
-        "ZYMEFORGE_DOCS_URL", "https://gabriel-qin.github.io/ZymeForge_docs/"
-    )
+    docs_url = os.getenv("ZYMEFORGE_DOCS_URL", "https://gabriel-qin.github.io/ZymeForge_docs/")
 
     @application.get("/", include_in_schema=False)
     async def home() -> RedirectResponse:
@@ -401,9 +395,7 @@ def create_app() -> FastAPI:
             "error": state.error,
         }
 
-    @application.get(
-        "/tools/{identifier}", response_class=HTMLResponse, include_in_schema=False
-    )
+    @application.get("/tools/{identifier}", response_class=HTMLResponse, include_in_schema=False)
     async def tool_page(request: Request, identifier: str) -> HTMLResponse:
         resolved = get_tool(identifier)
         if resolved is None:
@@ -591,9 +583,7 @@ def create_app() -> FastAPI:
                     elif method == SimilarityMethod.DHR:
                         if request.sequence is None:
                             raise ValueError("DHR requires sequence")
-                        index, manifest = load_index_bundle(
-                            _configured_path("ZYMEFORGE_DHR_INDEX")
-                        )
+                        index, manifest = load_index_bundle(_configured_path("ZYMEFORGE_DHR_INDEX"))
                         adapter = DHRSimilaritySearch(
                             DHREmbeddingExtractor(
                                 checkpoint_directory=_configured_path(
@@ -903,9 +893,7 @@ def create_app() -> FastAPI:
                 target = work / "target.pdb"
                 query.write_text(request.query_structure)
                 target.write_text(request.target_structure)
-                result = USAlignProvider(
-                    os.getenv("ZYMEFORGE_USALIGN_BINARY", "TMalign")
-                ).compare(
+                result = USAlignProvider(os.getenv("ZYMEFORGE_USALIGN_BINARY", "TMalign")).compare(
                     query,
                     target,
                     query_id=request.query_id,

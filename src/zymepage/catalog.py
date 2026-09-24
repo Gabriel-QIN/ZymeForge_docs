@@ -12,8 +12,12 @@ REGISTRY_GROUPS = (
         "id": "reaction-mining",
         "label": "Reaction Mining",
         "registries": (
-            "reaction_database", "reaction_encoder", "reaction_search",
-            "reaction2ec", "reaction2enzyme", "substrate2enzyme",
+            "reaction_database",
+            "reaction_encoder",
+            "reaction_search",
+            "reaction2ec",
+            "reaction2enzyme",
+            "substrate2enzyme",
         ),
         "intro": (
             "Start from substrates, products, reaction SMILES, EC numbers, or names "
@@ -25,8 +29,7 @@ REGISTRY_GROUPS = (
         "label": "Sequence Search",
         "registries": ("sequence_search",),
         "intro": (
-            "Search sequence space with alignment, profile, and protein language model "
-            "evidence."
+            "Search sequence space with alignment, profile, and protein language model evidence."
         ),
     },
     {
@@ -48,10 +51,17 @@ REGISTRY_GROUPS = (
         "id": "function-prediction",
         "label": "Function Prediction",
         "registries": (
-            "function_predictor", "substrate_compatibility", "kinetics_predictor",
-            "stability_predictor", "ph_predictor", "solubility_predictor",
-            "localization_predictor", "expression_predictor",
-            "cofactor_predictor", "developability_predictor", "docking",
+            "function_predictor",
+            "substrate_compatibility",
+            "kinetics_predictor",
+            "stability_predictor",
+            "ph_predictor",
+            "solubility_predictor",
+            "localization_predictor",
+            "expression_predictor",
+            "cofactor_predictor",
+            "developability_predictor",
+            "docking",
         ),
         "intro": (
             "Profile EC function, catalytic sites, substrate compatibility, kinetics, "
@@ -71,12 +81,14 @@ REGISTRY_GROUPS = (
         "id": "engineering",
         "label": "Engineering",
         "registries": (
-            "mutation_site_selector", "mutation_generator", "mutation_predictor",
-            "mutation_optimizer", "design_model",
+            "mutation_site_selector",
+            "mutation_generator",
+            "mutation_predictor",
+            "mutation_optimizer",
+            "design_model",
         ),
         "intro": (
-            "Move from a selected enzyme to targeted mutation optimization or sequence "
-            "redesign."
+            "Move from a selected enzyme to targeted mutation optimization or sequence redesign."
         ),
     },
     {
@@ -92,8 +104,7 @@ REGISTRY_GROUPS = (
         "label": "Output",
         "registries": ("output_writer",),
         "intro": (
-            "Export candidates, evidence, score cards, and provenance for downstream "
-            "analysis."
+            "Export candidates, evidence, score cards, and provenance for downstream analysis."
         ),
     },
 )
@@ -156,9 +167,7 @@ WORKFLOW_TOOLS = (
         "version": "workflow-1.0",
         "task": "reaction_mining",
         "category": "Reaction mining",
-        "introduction": (
-            "Resolve SMILES, InChI, InChIKey, or names and retrieve linked enzymes."
-        ),
+        "introduction": ("Resolve SMILES, InChI, InChIKey, or names and retrieve linked enzymes."),
         "description": (
             "Runs the configured substrate-to-enzyme provider and returns normalized "
             "candidate, EC, reaction, confidence, source, and provenance fields."
@@ -204,6 +213,54 @@ WORKFLOW_TOOLS = (
 )
 
 REACTION_PROVIDER_TOOLS = (
+    {
+        "id": "rhea--reaction-database",
+        "name": "Rhea Reaction Database",
+        "plugin": "rhea_tsv",
+        "version": "ingestion-1.0",
+        "task": "reaction_database_ingestion",
+        "category": "Reaction mining",
+        "introduction": "Load versioned Rhea reaction exports with EC and UniProt links.",
+        "description": (
+            "Preserves source version, checksum, row provenance, and normalized cross-links."
+        ),
+        "role": "database",
+        "runtime": "zymeforge-unified",
+        "inputs": ["versioned_rhea_tsv"],
+        "outputs": ["reaction_database_snapshot"],
+        "capability": "database.reaction",
+        "registry": "reaction_database",
+        "requires_gpu": False,
+        "citation": "Rhea",
+        "license": "CC BY 4.0",
+        "available": True,
+        "kind": "database",
+        "endpoint": None,
+    },
+    {
+        "id": "enzymemap--reaction-database",
+        "name": "EnzymeMap Reaction Database",
+        "plugin": "enzymemap",
+        "version": "ingestion-1.0",
+        "task": "reaction_database_ingestion",
+        "category": "Reaction mining",
+        "introduction": "Load standardized and atom-mapped EnzymeMap reaction tables.",
+        "description": (
+            "Auto-detects published CSV/TSV fields and records versioned checksum provenance."
+        ),
+        "role": "database",
+        "runtime": "zymeforge-unified",
+        "inputs": ["enzymemap_csv_or_tsv"],
+        "outputs": ["reaction_database_snapshot"],
+        "capability": "database.reaction",
+        "registry": "reaction_database",
+        "requires_gpu": False,
+        "citation": "EnzymeMap",
+        "license": None,
+        "available": True,
+        "kind": "database",
+        "endpoint": None,
+    },
     {
         "id": "local-exact--reaction-search",
         "name": "Exact Reaction Search",
@@ -299,6 +356,80 @@ REACTION_PROVIDER_TOOLS = (
 )
 
 SIMILARITY_TOOLS = (
+    {
+        "id": "mmseqs2--sequence-search",
+        "name": "MMseqs2 Sequence Search",
+        "plugin": "mmseqs2",
+        "version": "cli-wrapper-1.0",
+        "task": "protein_similarity",
+        "category": "Sequence search",
+        "introduction": (
+            "Run high-throughput sequence alignment against a configured protein database."
+        ),
+        "description": (
+            "Returns identity, query/target coverage, E-value, bit score, and alignment length."
+        ),
+        "role": "primary",
+        "runtime": "external-binary",
+        "inputs": ["sequence", "protein_database"],
+        "outputs": ["similarity_hits"],
+        "capability": "sequence.search",
+        "registry": "sequence_search",
+        "requires_gpu": False,
+        "citation": "MMseqs2",
+        "license": "GPL-3.0",
+        "available": True,
+        "kind": "retrieval",
+        "endpoint": "/api/similarity/search",
+    },
+    {
+        "id": "phmmer--sequence-search",
+        "name": "phmmer Sequence Search",
+        "plugin": "phmmer",
+        "version": "cli-wrapper-1.0",
+        "task": "protein_similarity",
+        "category": "Sequence search",
+        "introduction": "Search protein sequences with HMMER profile-HMM scoring.",
+        "description": (
+            "Parses domain-table output while retaining native E-values, scores, and coverage."
+        ),
+        "role": "primary",
+        "runtime": "external-binary",
+        "inputs": ["sequence", "protein_database"],
+        "outputs": ["similarity_hits"],
+        "capability": "sequence.search",
+        "registry": "sequence_search",
+        "requires_gpu": False,
+        "citation": "HMMER",
+        "license": "BSD-3-Clause",
+        "available": False,
+        "kind": "retrieval",
+        "endpoint": "/api/similarity/search",
+    },
+    {
+        "id": "hhsearch--profile-search",
+        "name": "HHsearch Profile Search",
+        "plugin": "hhsearch",
+        "version": "cli-wrapper-1.0",
+        "task": "remote_homology",
+        "category": "Sequence search",
+        "introduction": "Retrieve remote homologs by profile-profile comparison.",
+        "description": (
+            "Preserves HHsearch probability, E-value, P-value, score, and aligned columns."
+        ),
+        "role": "remote homology",
+        "runtime": "external-binary",
+        "inputs": ["a3m_or_hhm_profile", "hhsearch_database"],
+        "outputs": ["similarity_hits"],
+        "capability": "sequence.search",
+        "registry": "sequence_search",
+        "requires_gpu": False,
+        "citation": "HH-suite",
+        "license": "GPL-3.0",
+        "available": False,
+        "kind": "retrieval",
+        "endpoint": None,
+    },
     {
         "id": "esm2--similarity-retrieval",
         "name": "ESM-2 Retrieval",
