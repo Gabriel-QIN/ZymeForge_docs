@@ -1,97 +1,49 @@
-# Current Architecture
+# Current architecture
 
-This document records the implemented repository state. It distinguishes runnable code from adapter metadata and planned capabilities.
-
-## Platform boundary
-
-ZymeForge is currently an automated enzyme discovery and engineering platform. It does not contain an LLM planner, autonomous tool router, critic, reflection loop, dynamic replanning, multi-agent runtime, or Harness.
-
-```text
-Input and normalization
-        ↓
-Typed provider registries
-        ↓
-Discovery and fixed workflows
-        ↓
-Evidence fusion and ranking
-        ↓
-Engineering contracts and output writers
-```
-
-## Implemented packages
-
-| Package | Current responsibility | Implementation state |
-|---|---|---|
-| `core` | stable records, `Candidate`, `ToolResult`, provenance, evidence, score cards | implemented |
-| `input_data` | reaction parsing and lexical reaction-SMILES normalization | runnable baseline |
-| `database` | versioned local reaction/protein catalog | runnable baseline |
-| `substrate` | SMILES/InChI/InChIKey/name query contract and substrate-to-enzyme provider | runnable local-catalog baseline |
-| `reaction` | reaction input types and backward-compatible reaction imports | implemented |
-| `search.reaction` | exact, lexical-similarity, reaction-to-EC, and reaction-to-enzyme routes | runnable local-catalog baseline |
-| `search.sequence_based` | sequence-search protocol and registry | contract only |
-| `search.structure_based` | structure-search protocol and registry | contract only |
-| `function` | normalized function prediction runtime and model cards | contracts and adapters; upstream runners not bound |
-| `structure_prediction` | normalized structure prediction result and provider protocol | contract only |
-| `engineer.mutate` | mutation contracts plus GeoStab/ThermoMPNN adapters | adapters only; upstream runners not bound |
-| `engineer.redesign` | redesign contract and registry | contract only |
-| `fusion` | weighted calibrated evidence fusion | runnable |
-| `workflow` | reaction-mining workflow and YAML definition validation | runnable fixed workflow |
-| `output` | JSON and candidate TSV serialization | runnable |
-| `registry` | generic kernel and capability-scoped registries | runnable |
-
-## Runnable discovery paths
-
-### Reaction SMILES
-
-`build_reaction_workflow()` standardizes the query and runs four independent retrieval routes. Linked proteins are merged by protein identity, converted to evidence records, fused into `ScoreCard`, and ranked.
+ZymeForge is a registry-based enzyme discovery and engineering platform. Scientific
+providers attach to shared `Candidate`, evidence, structure, and provenance contracts;
+missing binaries, checkpoints, indexes, databases, or license acceptance are reported as
+unavailable and never replaced by generated placeholder results.
 
 ```text
-reaction SMILES
-  ├─ exact local reaction lookup
-  ├─ lexical n-gram similarity
-  ├─ catalog reaction → EC
-  └─ catalog reaction → enzyme
-          ↓
- CandidateReactionPair + EvidenceRecord
-          ↓
-       ZymeScore
+Reaction / substrate / protein / structure
+                    ↓
+     Exact, alignment, embedding and structure retrieval
+                    ↓
+      Function, site, pocket and kinetics evidence
+                    ↓
+       Calibrated fusion and candidate ranking
+                    ↓
+       Mutation prediction or sequence redesign
+                    ↓
+          Structure and ligand validation
 ```
 
-The lexical similarity provider is a dependency-light baseline, not a chemistry-aware DRFP/RXNFP/CGR implementation.
+## Implemented provider families
 
-### Substrate and general reaction queries
+| Area | Implemented interfaces and providers |
+|---|---|
+| Reaction data | local catalog, versioned Rhea, EnzymeMap and M-CSA ingestion |
+| Reaction mining | exact lookup, similarity baseline, reaction-to-EC, direct reaction-to-enzyme |
+| Sequence retrieval | MMseqs2, phmmer, HHsearch, ESM-2, TM-Vec and DHR |
+| Multimodal retrieval | SaProt, ProteinMPNN encoder and ProTrek sequence/text/structure modes |
+| Structure retrieval | Foldseek, US-align/TM-align and DALI validation |
+| Active site and pocket | catalytic geometry, ligand/metal geometry, fpocket, P2Rank and PocketMatch |
+| Structure prediction | Boltz-2, AlphaFold 3 and ESMFold guarded wrappers |
+| Engineering | LigandMPNN/ProteinMPNN redesign, unZipro and FoldX plus mutation model adapters |
+| Evidence fusion | weighted ZymeScore, reciprocal rank fusion, Platt/isotonic calibration, Pareto and logistic ranking |
+| Runtime | constrained Harness V1, deterministic routing, run artifacts and tool health reports |
 
-`build_discovery_service()` exposes stable methods:
+An implemented wrapper is not automatically an available installation. The Registry page
+shows the distinction, while `zymeforge harness health --json` reports the current machine.
 
-```python
-predict_enzymes_from_substrate()
-predict_enzymes_from_reaction()
-search_enzymes_by_reaction()
-```
+## Runtime and provenance
 
-The local provider accepts substrate SMILES, InChI, InChIKey, or names when those identifiers are represented in the catalog. Reaction queries accept reaction SMILES, `substrate -> product`, EC numbers, names, and descriptions. The demo catalog currently contains enough annotations for SMILES, EC, and reaction-name examples; broader identifier resolution requires production databases.
+Harness V1 compiles or accepts one validated plan and executes only registered handlers.
+It has no reflection loop, dynamic replanning, autonomous shell access, or multi-agent
+execution. Each tool result stores parameters, timestamps, elapsed time, tool version,
+runtime information, artifacts, normalized candidates, and provider provenance.
 
-## Identity and result contracts
-
-`ProteinRecord.id` remains the stable protein identity. `Candidate.candidate_id` is derived as `candidate:<protein_id>` so retrieval routes do not create incompatible identifiers. Designed variants carry `parent_candidate_id`.
-
-`ToolResult[T]` is the common result envelope for future providers and workflows. It records status, tool and version, normalized input/output, scores, files, parameters, runtime, error, and a `ProvenanceRecord`.
-
-## Function adapter status
-
-The repository registers 21 function adapters covering EC/function, catalytic sites, substrate compatibility, kinetics, pH, thermostability, solubility, cofactor preference, and developability. GeoStab and ThermoMPNN are registered for mutation effects.
-
-These adapters share `FunctionalPrediction` and `UnifiedFunctionModel`, but registration does not mean inference is installed. Without an explicitly configured upstream runner and checkpoint, adapters raise `ModelBackendUnavailable` and never return fabricated predictions.
-
-## Environment and reproducibility
-
-- one `zymeforge` Conda environment;
-- Python 3.11 for the CUDA environment;
-- official PyPI and official PyTorch CUDA 12.8 wheel index;
-- `torch==2.11.0+cu128` in the environment definition;
-- RDKit from conda-forge;
-- plugin, model, database, parameters, IDs, and timestamps available through provenance contracts.
-
-## Tested behavior
-
-The test suite covers registries, reaction normalization, reaction mining, discovery queries, function adapter behavior, fusion, output writers, workflow validation, candidate identity, and provenance serialization.
+The unified environment uses Python 3.11, official package sources, CUDA 12.8-compatible
+PyTorch, and one `zymeforge` Conda environment. Restricted providers such as local
+AlphaFold 3 remain disabled until legal model parameters and license gates are configured.

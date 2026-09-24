@@ -48,7 +48,7 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
     structure_prediction = next(
         item for item in payload["registries"] if item["id"] == "structure-prediction"
     )
-    assert reaction["count"] == 8
+    assert reaction["count"] == 9
     assert {tool["name"] for tool in reaction["tools"]} >= {
         "Reaction-to-Enzyme Mining",
         "Substrate-to-Enzyme Mining",
@@ -58,6 +58,7 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
         "Direct Reaction-to-Enzyme",
         "Rhea Reaction Database",
         "EnzymeMap Reaction Database",
+        "M-CSA Catalytic Templates",
     }
     assert {tool["name"] for tool in structure["tools"]} >= {
         "GraphEC-AS",
@@ -66,6 +67,9 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
         "ProteinMPNN Encoder Retrieval",
         "Foldseek Retrieval",
         "DALI Validation",
+        "fpocket Pocket Detection",
+        "P2Rank Pocket Detection",
+        "PocketMatch Site Comparison",
     }
     sequence = next(item for item in payload["registries"] if item["id"] == "sequence-search")
     assert {tool["name"] for tool in sequence["tools"]} == {
@@ -82,6 +86,7 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
         "LigandMPNN Sequence Redesign",
         "LigandMPNN Sequence Scoring",
         "unZipro Mutation Prediction",
+        "FoldX Mutation Stability",
     }
     assert {tool["name"] for tool in structure_prediction["tools"]} >= {
         "Boltz-2 Structure Prediction",
@@ -95,12 +100,36 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
         "Weighted Evidence Fusion",
         "Reciprocal Rank Fusion",
         "ZymeScore Candidate Ranking",
+        "Platt Score Calibration",
+        "Isotonic Score Calibration",
+        "Pareto Candidate Ranking",
+        "Logistic Evidence Ranking",
     }
     assert {tool["name"] for tool in output["tools"]} >= {
         "JSON Result Writer",
         "Candidate TSV Writer",
         "Harness Run Artifacts",
+        "Tool Availability Health",
     }
+
+
+def test_tool_health_endpoint_reports_real_availability() -> None:
+    response = request("GET", "/api/health/tools")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["count"] >= 20
+    assert payload["available"] < payload["count"]
+    assert all("components" in item for item in payload["tools"])
+
+
+def test_non_model_catalog_cards_have_detail_pages() -> None:
+    for identifier in (
+        "rhea--reaction-database",
+        "fpocket--pocket-detection",
+        "platt--score-calibration",
+        "harness--tool-health",
+    ):
+        assert request("GET", f"/tools/{identifier}").status_code == 200
 
 
 def test_static_registry_snapshot_matches_live_catalog() -> None:

@@ -95,6 +95,32 @@
           "endpoint": "/api/reactions/mine"
         },
         {
+          "id": "mcsa--catalytic-templates",
+          "name": "M-CSA Catalytic Templates",
+          "plugin": "mcsa_templates",
+          "version": "ingestion-1.0",
+          "task": "catalytic_template_ingestion",
+          "category": "Reaction mining",
+          "introduction": "Load catalytic residues, roles, mechanisms, EC, PDB, and UniProt links.",
+          "description": "Versioned M-CSA evidence with source checksum and grouped site templates.",
+          "role": "database",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "mcsa_residue_csv"
+          ],
+          "outputs": [
+            "catalytic_residue_templates"
+          ],
+          "capability": "database.reaction",
+          "registry": "reaction_database",
+          "requires_gpu": false,
+          "citation": "M-CSA",
+          "license": null,
+          "available": true,
+          "kind": "database",
+          "endpoint": null
+        },
+        {
           "id": "reaction-similarity--search",
           "name": "Reaction Similarity Search",
           "plugin": "local_ngram_similarity",
@@ -231,7 +257,7 @@
           "endpoint": "/api/substrates/mine"
         }
       ],
-      "count": 8
+      "count": 9
     },
     {
       "id": "sequence-search",
@@ -613,6 +639,59 @@
           "endpoint": "/api/structures/ligand"
         },
         {
+          "id": "p2rank--pocket-detection",
+          "name": "P2Rank Pocket Detection",
+          "plugin": "p2rank",
+          "version": "cli-wrapper-1.0",
+          "task": "active_site_search",
+          "category": "Structure search",
+          "introduction": "Predict ligand-binding pockets with P2Rank.",
+          "description": "Preserves native rank, score, center, residues, and provider metadata.",
+          "role": "pocket detection",
+          "runtime": "external-binary",
+          "inputs": [
+            "protein_structure"
+          ],
+          "outputs": [
+            "pocket_predictions"
+          ],
+          "capability": "active_site.search",
+          "registry": "active_site_search",
+          "requires_gpu": false,
+          "citation": "P2Rank",
+          "license": "MIT",
+          "available": false,
+          "kind": "structure",
+          "endpoint": null
+        },
+        {
+          "id": "pocketmatch--site-comparison",
+          "name": "PocketMatch Site Comparison",
+          "plugin": "pocketmatch",
+          "version": "cli-wrapper-1.0",
+          "task": "active_site_search",
+          "category": "Structure search",
+          "introduction": "Compare local binding pockets independently of global fold.",
+          "description": "Retains PocketMatch PMS scores as separate local-site evidence.",
+          "role": "local comparison",
+          "runtime": "external-binary",
+          "inputs": [
+            "query_pocket",
+            "target_pocket"
+          ],
+          "outputs": [
+            "pocket_similarity"
+          ],
+          "capability": "active_site.search",
+          "registry": "active_site_search",
+          "requires_gpu": false,
+          "citation": "PocketMatch",
+          "license": null,
+          "available": false,
+          "kind": "structure",
+          "endpoint": null
+        },
+        {
           "id": "proteinmpnn--similarity-retrieval",
           "name": "ProteinMPNN Encoder Retrieval",
           "plugin": "proteinmpnn_encoder_experimental",
@@ -693,9 +772,35 @@
           "available": false,
           "kind": "structure",
           "endpoint": "/api/structures/compare"
+        },
+        {
+          "id": "fpocket--pocket-detection",
+          "name": "fpocket Pocket Detection",
+          "plugin": "fpocket",
+          "version": "cli-wrapper-1.0",
+          "task": "active_site_search",
+          "category": "Structure search",
+          "introduction": "Detect geometry-defined cavities for active-site screening.",
+          "description": "Normalizes fpocket coordinate outputs as ranked pocket predictions.",
+          "role": "pocket detection",
+          "runtime": "external-binary",
+          "inputs": [
+            "protein_structure"
+          ],
+          "outputs": [
+            "pocket_predictions"
+          ],
+          "capability": "active_site.search",
+          "registry": "active_site_search",
+          "requires_gpu": false,
+          "citation": "fpocket",
+          "license": "MIT",
+          "available": false,
+          "kind": "structure",
+          "endpoint": null
         }
       ],
-      "count": 9
+      "count": 12
     },
     {
       "id": "function-prediction",
@@ -1404,6 +1509,35 @@
       "intro": "Move from a selected enzyme to targeted mutation optimization or sequence redesign.",
       "tools": [
         {
+          "id": "foldx--mutation-stability",
+          "name": "FoldX Mutation Stability",
+          "plugin": "foldx",
+          "version": "cli-wrapper-1.0",
+          "task": "mutation_effect_prediction",
+          "category": "Engineering",
+          "introduction": "Estimate mutation \u0394\u0394G with FoldX BuildModel.",
+          "description": "Reads the FoldX difference output and preserves all native energy terms.",
+          "role": "validation",
+          "runtime": "external-binary",
+          "inputs": [
+            "protein_structure",
+            "mutation"
+          ],
+          "outputs": [
+            "ddg",
+            "energy_terms",
+            "provenance"
+          ],
+          "capability": "engineering.mutation.predictor",
+          "registry": "mutation_predictor",
+          "requires_gpu": false,
+          "citation": "FoldX",
+          "license": "FoldX terms apply",
+          "available": false,
+          "kind": "engineering",
+          "endpoint": null
+        },
+        {
           "id": "geostab--mutation-effect-prediction",
           "name": "GeoStab",
           "plugin": "geostab",
@@ -1553,7 +1687,7 @@
           "endpoint": "/api/engineering/mutations"
         }
       ],
-      "count": 5
+      "count": 6
     },
     {
       "id": "evidence-fusion",
@@ -1565,6 +1699,117 @@
       ],
       "intro": "Calibrate heterogeneous evidence into an explainable ZymeScore and candidate ranking.",
       "tools": [
+        {
+          "id": "isotonic--score-calibration",
+          "name": "Isotonic Score Calibration",
+          "plugin": "isotonic",
+          "version": "1.0.0",
+          "task": "score_calibration",
+          "category": "Evidence fusion",
+          "introduction": "Learn a non-parametric monotonic score calibration.",
+          "description": "Pool-adjacent-violators calibration with explicit thresholds and values.",
+          "role": "calibration",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "raw_scores",
+            "binary_labels"
+          ],
+          "outputs": [
+            "calibrated_probability",
+            "calibration_report"
+          ],
+          "capability": "evidence.calibrator",
+          "registry": "score_calibrator",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "fusion",
+          "endpoint": null
+        },
+        {
+          "id": "logistic--evidence-ranking",
+          "name": "Logistic Evidence Ranking",
+          "plugin": "logistic_evidence_ranker",
+          "version": "1.0.0",
+          "task": "candidate_ranking",
+          "category": "Evidence fusion",
+          "introduction": "Fit a transparent learned ranking baseline on labeled candidates.",
+          "description": "Reports calibrated score and per-feature contributions for each candidate.",
+          "role": "learned ranking",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "calibrated_feature_matrix",
+            "binary_labels"
+          ],
+          "outputs": [
+            "ranked_candidates",
+            "feature_contributions"
+          ],
+          "capability": "evidence.fusion",
+          "registry": "fusion_model",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "fusion",
+          "endpoint": null
+        },
+        {
+          "id": "pareto--candidate-ranking",
+          "name": "Pareto Candidate Ranking",
+          "plugin": "pareto",
+          "version": "1.0.0",
+          "task": "candidate_ranking",
+          "category": "Evidence fusion",
+          "introduction": "Rank non-dominated candidates across conflicting objectives.",
+          "description": "Preserves multi-objective tradeoffs without forcing unlike scores together.",
+          "role": "ranking",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "candidate_objectives"
+          ],
+          "outputs": [
+            "pareto_fronts",
+            "ranked_candidates"
+          ],
+          "capability": "evidence.fusion",
+          "registry": "fusion_model",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "fusion",
+          "endpoint": null
+        },
+        {
+          "id": "platt--score-calibration",
+          "name": "Platt Score Calibration",
+          "plugin": "platt",
+          "version": "1.0.0",
+          "task": "score_calibration",
+          "category": "Evidence fusion",
+          "introduction": "Map provider-native scores to comparable probabilities.",
+          "description": "Regularized logistic calibration with Brier score reporting.",
+          "role": "calibration",
+          "runtime": "zymeforge-unified",
+          "inputs": [
+            "raw_scores",
+            "binary_labels"
+          ],
+          "outputs": [
+            "calibrated_probability",
+            "calibration_report"
+          ],
+          "capability": "evidence.calibrator",
+          "registry": "score_calibrator",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "fusion",
+          "endpoint": null
+        },
         {
           "id": "rrf--similarity-fusion",
           "name": "Reciprocal Rank Fusion",
@@ -1648,7 +1893,7 @@
           "endpoint": "/api/harness/run"
         }
       ],
-      "count": 3
+      "count": 7
     },
     {
       "id": "output",
@@ -1738,9 +1983,33 @@
           "available": true,
           "kind": "output",
           "endpoint": null
+        },
+        {
+          "id": "harness--tool-health",
+          "name": "Tool Availability Health",
+          "plugin": "tool_health",
+          "version": "1.0.0",
+          "task": "operations",
+          "category": "Output",
+          "introduction": "Inspect binaries, checkpoints, indexes, databases, licenses, and handlers.",
+          "description": "Reports unavailable dependencies explicitly without producing fake results.",
+          "role": "operations",
+          "runtime": "zymeforge-unified",
+          "inputs": [],
+          "outputs": [
+            "tool_health_reports"
+          ],
+          "capability": "output.writer",
+          "registry": "output_writer",
+          "requires_gpu": false,
+          "citation": null,
+          "license": "Apache-2.0",
+          "available": true,
+          "kind": "output",
+          "endpoint": "/api/health/tools"
         }
       ],
-      "count": 3
+      "count": 4
     }
   ]
 }

@@ -422,6 +422,15 @@ def create_app() -> FastAPI:
         groups = list_registry_groups()
         return {"count": len(groups), "registries": groups}
 
+    @application.get("/api/health/tools")
+    async def tool_health_api() -> dict[str, Any]:
+        reports = build_harness_runtime().executor.health()
+        return {
+            "count": len(reports),
+            "available": sum(item.available for item in reports),
+            "tools": [item.model_dump(mode="json") for item in reports],
+        }
+
     @application.get("/api/registries/{registry_id}")
     async def registry_api(registry_id: str) -> dict[str, Any]:
         group = next(

@@ -37,6 +37,8 @@ commands preserve native metrics and never apply acceptance thresholds automatic
 | `zymeforge similarity build-index` | build Flat/HNSW index plus provenance manifest |
 | `zymeforge similarity build-structure-db` | build a Foldseek database |
 | `zymeforge similarity search` | run independent retrieval routes and optional DALI |
+| `zymeforge similarity alignment-search` | run MMseqs2, phmmer, or HHsearch |
+| `zymeforge harness health` | inspect tools, assets, databases, licenses, and handlers |
 | `zymepage web` | serve the separate ZymePage catalog and model API |
 
 Use `--help` at any level for current options:

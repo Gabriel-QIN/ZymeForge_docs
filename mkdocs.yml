@@ -51,8 +51,6 @@ nav:
   - Development:
       - Current architecture: development/CURRENT_ARCHITECTURE.md
       - Capability matrix: development/CAPABILITY_MATRIX.md
-      - Gap analysis: development/GAP_ANALYSIS.md
-      - Roadmap: development/DEVELOPMENT_ROADMAP.md
   - Workflows:
       - Harness V1: workflows/harness-v1.md
       - Reaction-to-enzyme mining: workflows/reaction-mining.md
@@ -65,3 +63,4 @@ nav:
   - Reference:
       - CLI: reference/cli.md
       - Python contracts: reference/contracts.md
+      - Operations and benchmarks: reference/operations.md
