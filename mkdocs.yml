@@ -55,6 +55,7 @@ nav:
       - Harness V1: workflows/harness-v1.md
       - Reaction-to-enzyme mining: workflows/reaction-mining.md
       - Protein similarity retrieval: workflows/similarity-retrieval.md
+      - RT and PET validation: workflows/mining-validation.md
       - Structure prediction and post-screening: workflows/structure-postscreening.md
       - Engineering: workflows/engineering.md
   - Registries:
