@@ -76,6 +76,18 @@ zymeforge model-hub verify
 The hub distinguishes natively runnable providers, adapter-ready assets, and registered-only
 models. Restricted parameters are never fetched by bypassing upstream license terms.
 
+For ProTrek mining, the hub can also fetch the authors' Swiss-Prot FAISS indexes. The selected
+download includes sequence and structure indexes plus enzyme-relevant text sections such as
+active site, catalytic activity, EC number, cofactor, binding site, and function:
+
+```bash
+zymeforge model-hub download --models protrek_swissprot_index
+```
+
+`model-hub list --json` also exposes verified official locations for CLIPZyme, CARE/CREEP,
+ProtST, ProteinCLIP, and ReactZyme. These entries are not labelled runnable until a matching
+provider has passed the unified CUDA 12.8 environment tests.
+
 ## Containers
 
 ```bash

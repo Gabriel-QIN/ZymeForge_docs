@@ -8,7 +8,7 @@ framework does not average incomparable cosine, E-value, and TM-score values.
 | ESM-2 | sequence semantics | 650M checkpoint and vector index | cosine-ranked hits |
 | TM-Vec | sequence → structural neighborhood | ProtT5, TM-Vec checkpoint and index | cosine-ranked hits |
 | DHR | asymmetric remote homology | official query/target checkpoints and target index | inner-product hits |
-| ProTrek | sequence/structure/text | official source, 35M/650M weights and modality index | cross-modal cosine hits |
+| ProTrek | sequence/structure/text | official source, 35M/650M weights and official or local modality index | cross-modal cosine hits |
 | ProSST | sequence + quantized structure | official model and SST quantizer | provider integration in progress |
 | SaProt | amino acid + 3Di | 650M checkpoint, Foldseek, vector index | structure-aware cosine hits |
 | ProteinMPNN | backbone encoder | official runner/checkpoint and vector index | experimental cosine hits |
@@ -73,6 +73,24 @@ zymeforge similarity search --query pet_hydrolase.txt --methods protrek \
 and embedding-index retrieval. Index construction supports the corresponding
 `--min-sequence-length` and `--max-sequence-length` filters. ProTrek 35M and 650M Hugging Face
 layouts are both recognized, and the exact model version is retained in the index manifest.
+
+The Model Hub registers the official ProTrek Swiss-Prot FAISS release as
+`protrek_swissprot_index`. ZymeForge's read-only FAISS adapter validates that index row count and
+the ordered ID table agree, preserves the target length from `ids.tsv`, and never mixes sequence,
+structure, or text scores into one unlabelled value. CLIPZyme, CREEP/CARE, ProtST, ProteinCLIP,
+and ReactZyme are catalogued separately because their checkpoints, tasks, and representation
+spaces are not interchangeable with ProTrek.
+
+The official index can be queried directly, including target-length filtering from its ID table:
+
+```bash
+zymeforge similarity search --query query.fasta --methods protrek \
+  --protrek-source /mnt/data2/model_hub/zymeforge/sources/westlake-repl--ProTrek \
+  --protrek-weights /mnt/data2/model_hub/zymeforge/westlake-repl--ProTrek_650M \
+  --protrek-official-index /mnt/data2/model_hub/zymeforge/westlake-repl--faiss_index/SwissProt/ProTrek_650M_UniRef50/sequence/sequence.index \
+  --protrek-official-ids /mnt/data2/model_hub/zymeforge/westlake-repl--faiss_index/SwissProt/ProTrek_650M_UniRef50/sequence/ids.tsv \
+  --max-target-length 2000 --top-k 100
+```
 
 ## API
 

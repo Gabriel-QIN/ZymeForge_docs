@@ -40,14 +40,24 @@ def test_registry_api_groups_models_and_empty_extension_points() -> None:
     response = request("GET", "/api/registries")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["count"] == 8
+    assert payload["count"] == 9
     reaction = next(item for item in payload["registries"] if item["id"] == "reaction-mining")
     structure = next(item for item in payload["registries"] if item["id"] == "structure-search")
     function = next(item for item in payload["registries"] if item["id"] == "function-prediction")
     engineering = next(item for item in payload["registries"] if item["id"] == "engineering")
+    model_hub = next(
+        item for item in payload["registries"] if item["id"] == "mining-model-hub"
+    )
     structure_prediction = next(
         item for item in payload["registries"] if item["id"] == "structure-prediction"
     )
+    assert {tool["plugin"] for tool in model_hub["tools"]} >= {
+        "protrek",
+        "clipzyme",
+        "creep",
+        "protst",
+        "proteinclip",
+    }
     assert reaction["count"] == 9
     assert {tool["name"] for tool in reaction["tools"]} >= {
         "Reaction-to-Enzyme Mining",

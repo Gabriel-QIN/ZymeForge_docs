@@ -6,6 +6,7 @@ from typing import Any
 
 from zymeforge.engineer.mutate import MODELS as MUTATION_MODEL_PLUGINS
 from zymeforge.function import MODEL_PLUGINS
+from zymeforge.model_hub import MODEL_ASSETS
 
 REGISTRY_GROUPS = (
     {
@@ -22,6 +23,15 @@ REGISTRY_GROUPS = (
         "intro": (
             "Start from substrates, products, reaction SMILES, EC numbers, or names "
             "and retrieve enzyme candidates."
+        ),
+    },
+    {
+        "id": "mining-model-hub",
+        "label": "Mining Model Hub",
+        "registries": ("model_asset",),
+        "intro": (
+            "Discover official sequence, structure, text, and reaction mining assets with "
+            "explicit compatibility status."
         ),
     },
     {
@@ -1218,6 +1228,32 @@ OUTPUT_TOOLS = (
 )
 
 
+def serialize_model_asset(asset: Any) -> dict[str, Any]:
+    """Expose core Model Hub metadata without claiming that downloaded means runnable."""
+    return {
+        "id": f"model-asset--{asset.id.replace('_', '-')}",
+        "name": asset.id.replace("_", " ").title(),
+        "plugin": asset.provider,
+        "version": asset.revision,
+        "task": asset.tasks[0] if asset.tasks else "model_asset",
+        "category": "Mining Model Hub",
+        "introduction": asset.purpose,
+        "description": asset.notes or asset.purpose,
+        "role": asset.asset_type,
+        "runtime": asset.compatibility,
+        "inputs": list(asset.modalities),
+        "outputs": list(asset.tasks),
+        "capability": "model.asset",
+        "registry": "model_asset",
+        "requires_gpu": asset.asset_type == "model",
+        "citation": asset.homepage,
+        "license": None,
+        "available": asset.compatibility == "native",
+        "kind": "asset",
+        "endpoint": asset.official_download or asset.homepage,
+    }
+
+
 def tool_id(model: type[Any]) -> str:
     """Return a stable URL identifier for a registered model/task pair."""
     return f"{model.spec.name}--{model.card.task}".replace("_", "-")
@@ -1263,6 +1299,7 @@ def list_tools() -> list[dict[str, Any]]:
             *STRUCTURE_TOOLS,
             *EVIDENCE_TOOLS,
             *OUTPUT_TOOLS,
+            *(serialize_model_asset(asset) for asset in MODEL_ASSETS),
             *(serialize_model(model) for model in models),
         ],
         key=lambda item: item["name"],
