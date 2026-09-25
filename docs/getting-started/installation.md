@@ -31,6 +31,28 @@ zymeforge models
 
 Expected CUDA fields are `2.11.0+cu128`, `12.8`, and `True`.
 
+## Local database configuration
+
+The general configuration maps stable database names to paths under
+`/mnt/data2/database`. Inspect the current machine with:
+
+```bash
+zymeforge database list
+zymeforge database resolve uniref90 --kind sequence
+```
+
+The local deployment links these sequence collections without duplicating their source
+files: AFESM, EEMC, GOPC, Logan, NR, and UniRef90. A one-million-sequence UniRef90 example
+and its persistent MMseqs2 index are also configured.
+
+Database entries live under `databases` in `configs/default.yaml`. Set
+`ZYMEFORGE_CONFIG` or pass `--database-config` to use another general configuration.
+Commands accept either a configured name or an explicit filesystem path.
+
+AFDB is currently linked as a `foldseek_archive`. It is visible in the catalog but is not
+reported as directly searchable until the 458G archive has been extracted into a valid
+Foldseek database.
+
 ## Containers
 
 ```bash

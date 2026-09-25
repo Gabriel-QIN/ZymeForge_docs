@@ -33,6 +33,9 @@ commands preserve native metrics and never apply acceptance thresholds automatic
 | `zymeforge registries` | list typed extension points |
 | `zymeforge plugins` | list configured providers |
 | `zymeforge models` | list functional and mutation adapters |
+| `zymeforge database list` | list named sequence and structure databases |
+| `zymeforge database resolve` | resolve a database name or explicit path |
+| `zymeforge database sample-fasta` | create a deterministic first-N FASTA example and manifest |
 | `zymeforge similarity embed` | batch ESM-2, SaProt, or ProteinMPNN embeddings |
 | `zymeforge similarity build-index` | build Flat/HNSW index plus provenance manifest |
 | `zymeforge similarity build-structure-db` | build a Foldseek database |
@@ -47,5 +50,6 @@ Use `--help` at any level for current options:
 zymeforge --help
 zymeforge run-reaction --help
 zymeforge similarity --help
+zymeforge database --help
 zymepage web --help
 ```

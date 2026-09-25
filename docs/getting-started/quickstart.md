@@ -31,6 +31,29 @@ zymeforge models
 
 `registries` lists supported extension points, `plugins` lists configured providers, and `models` lists Functional Prediction Registry adapters.
 
+## Search a configured sequence database
+
+List configured resources and run MMseqs2 against the one-million-sequence example:
+
+```bash
+zymeforge database list
+zymeforge similarity alignment-search \
+  --method mmseqs2 \
+  --query query.fasta \
+  --database uniref90_example_1m_mmseqs \
+  --output runs/mmseqs_hits.tsv
+```
+
+Use a complete database by name, such as `uniref90` or `nr`, or pass an explicit path:
+
+```bash
+zymeforge similarity alignment-search \
+  --method mmseqs2 \
+  --query query.fasta \
+  --database /data/custom/proteins.fasta \
+  --output runs/custom_hits.tsv
+```
+
 ## Validate a workflow
 
 ```bash
