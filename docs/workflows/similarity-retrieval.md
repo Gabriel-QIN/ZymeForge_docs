@@ -8,7 +8,8 @@ framework does not average incomparable cosine, E-value, and TM-score values.
 | ESM-2 | sequence semantics | 650M checkpoint and vector index | cosine-ranked hits |
 | TM-Vec | sequence → structural neighborhood | ProtT5, TM-Vec checkpoint and index | cosine-ranked hits |
 | DHR | asymmetric remote homology | official query/target checkpoints and target index | inner-product hits |
-| ProTrek | sequence/structure/text | official source, 650M weights and modality index | cross-modal cosine hits |
+| ProTrek | sequence/structure/text | official source, 35M/650M weights and modality index | cross-modal cosine hits |
+| ProSST | sequence + quantized structure | official model and SST quantizer | provider integration in progress |
 | SaProt | amino acid + 3Di | 650M checkpoint, Foldseek, vector index | structure-aware cosine hits |
 | ProteinMPNN | backbone encoder | official runner/checkpoint and vector index | experimental cosine hits |
 | Foldseek | 3Di + amino-acid alignment | Foldseek binary and structure database | alignment metrics |
@@ -22,7 +23,8 @@ sequence identity, query length, and target length as independent evidence.
 
 ```bash
 zymeforge similarity embed \
-  --method esm2 --input proteins.fasta --output embeddings/esm2.jsonl
+  --method esm2 --input proteins.fasta --max-sequence-length 2000 \
+  --output embeddings/esm2.jsonl
 
 zymeforge similarity build-index \
   --method esm2 --embeddings embeddings/esm2.jsonl \
@@ -31,7 +33,7 @@ zymeforge similarity build-index \
 
 zymeforge similarity search \
   --query query.fasta --methods esm2 \
-  --index-dir indexes --top-k 100
+  --index-dir indexes --max-target-length 2000 --top-k 100
 ```
 
 Structure retrieval accepts comma-separated methods:
@@ -66,6 +68,11 @@ zymeforge similarity search --query pet_hydrolase.txt --methods protrek \
   --protrek-source external/ProTrek --protrek-weights weights/ProTrek_650M \
   --index-dir indexes --top-k 100
 ```
+
+`--min-target-length` and `--max-target-length` apply to MMseqs2, phmmer, Foldseek,
+and embedding-index retrieval. Index construction supports the corresponding
+`--min-sequence-length` and `--max-sequence-length` filters. ProTrek 35M and 650M Hugging Face
+layouts are both recognized, and the exact model version is retained in the index manifest.
 
 ## API
 

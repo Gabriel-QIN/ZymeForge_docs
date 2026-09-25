@@ -53,6 +53,29 @@ AFDB is currently linked as a `foldseek_archive`. It is visible in the catalog b
 reported as directly searchable until the 458G archive has been extracted into a valid
 Foldseek database.
 
+Create a deterministic, streamed sample with the same `<2000 aa` rule used for retrieval:
+
+```bash
+zymeforge database sample-fasta --source uniref90 --count 1000000 \
+  --max-sequence-length 2000 \
+  --output /mnt/data2/database/examples/uniref90_lt2000_1m.fa
+```
+
+The same length flags work with AFESM, EEMC, GOPC, Logan, NR, and explicit FASTA paths.
+
+## Model Hub
+
+Public model assets default to `/mnt/data2/model_hub/zymeforge`:
+
+```bash
+zymeforge model-hub list
+zymeforge model-hub download --models esm2_t33_650m,saprot_650m_af2,protrek_650m
+zymeforge model-hub verify
+```
+
+The hub distinguishes natively runnable providers, adapter-ready assets, and registered-only
+models. Restricted parameters are never fetched by bypassing upstream license terms.
+
 ## Containers
 
 ```bash

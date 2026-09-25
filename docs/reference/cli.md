@@ -36,6 +36,9 @@ commands preserve native metrics and never apply acceptance thresholds automatic
 | `zymeforge database list` | list named sequence and structure databases |
 | `zymeforge database resolve` | resolve a database name or explicit path |
 | `zymeforge database sample-fasta` | create a deterministic first-N FASTA example and manifest |
+| `zymeforge model-hub list` | list model assets, compatibility state, and local paths |
+| `zymeforge model-hub download` | download selected public assets from official Hugging Face repositories |
+| `zymeforge model-hub verify` | verify downloaded asset directories |
 | `zymeforge similarity embed` | batch ESM-2, SaProt, or ProteinMPNN embeddings |
 | `zymeforge similarity build-index` | build Flat/HNSW index plus provenance manifest |
 | `zymeforge similarity build-structure-db` | build a Foldseek database |
