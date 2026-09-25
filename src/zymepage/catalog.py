@@ -1248,7 +1248,8 @@ def serialize_model_asset(asset: Any) -> dict[str, Any]:
         "requires_gpu": asset.asset_type == "model",
         "citation": asset.homepage,
         "license": None,
-        "available": asset.compatibility == "native",
+        # Static Pages cannot know whether a deployment has downloaded the asset.
+        "available": False,
         "kind": "asset",
         "endpoint": asset.official_download or asset.homepage,
     }

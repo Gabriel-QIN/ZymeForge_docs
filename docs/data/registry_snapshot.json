@@ -408,7 +408,7 @@
           "requires_gpu": true,
           "citation": null,
           "license": null,
-          "available": true,
+          "available": false,
           "kind": "asset",
           "endpoint": null
         },
@@ -430,7 +430,7 @@
           "requires_gpu": true,
           "citation": null,
           "license": null,
-          "available": true,
+          "available": false,
           "kind": "asset",
           "endpoint": null
         },
@@ -496,7 +496,7 @@
           "requires_gpu": true,
           "citation": null,
           "license": null,
-          "available": true,
+          "available": false,
           "kind": "asset",
           "endpoint": null
         },
@@ -553,7 +553,7 @@
           "requires_gpu": true,
           "citation": "https://github.com/westlake-repl/ProTrek",
           "license": null,
-          "available": true,
+          "available": false,
           "kind": "asset",
           "endpoint": "https://github.com/westlake-repl/ProTrek"
         },
@@ -582,7 +582,7 @@
           "requires_gpu": true,
           "citation": "https://github.com/westlake-repl/ProTrek",
           "license": null,
-          "available": true,
+          "available": false,
           "kind": "asset",
           "endpoint": "https://github.com/westlake-repl/ProTrek"
         },
@@ -611,7 +611,7 @@
           "requires_gpu": false,
           "citation": "https://huggingface.co/datasets/westlake-repl/faiss_index",
           "license": null,
-          "available": true,
+          "available": false,
           "kind": "asset",
           "endpoint": "https://huggingface.co/datasets/westlake-repl/faiss_index"
         },
@@ -690,7 +690,7 @@
           "requires_gpu": true,
           "citation": null,
           "license": null,
-          "available": true,
+          "available": false,
           "kind": "asset",
           "endpoint": null
         },
@@ -712,7 +712,7 @@
           "requires_gpu": true,
           "citation": null,
           "license": null,
-          "available": true,
+          "available": false,
           "kind": "asset",
           "endpoint": null
         },
@@ -734,7 +734,7 @@
           "requires_gpu": true,
           "citation": null,
           "license": null,
-          "available": true,
+          "available": false,
           "kind": "asset",
           "endpoint": null
         },
