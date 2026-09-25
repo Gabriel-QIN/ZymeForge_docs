@@ -297,7 +297,7 @@
           "task": "reaction_to_ec",
           "category": "Mining Model Hub",
           "introduction": "reaction-to-EC and reaction/protein contrastive retrieval checkpoints",
-          "description": "Contains CREEP and CARE CLIPZyme-baseline checkpoints. Native inference still requires a CUDA-12.8-compatible runner and must not be confused with the official CLIPZyme release.",
+          "description": "Downloads only CREEP checkpoints. CARE's benchmark-specific CLIPZyme baselines are intentionally excluded and must not be confused with the official CLIPZyme release. Native inference still requires a CUDA-12.8-compatible runner.",
           "role": "model",
           "runtime": "registered_only",
           "inputs": [
