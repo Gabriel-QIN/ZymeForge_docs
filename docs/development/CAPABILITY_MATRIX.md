@@ -10,6 +10,7 @@ Status meanings:
 | Domain | Capability | Providers | Status |
 |---|---|---|---|
 | Reaction | exact/similar reaction, reaction-to-EC/enzyme | local catalog routes | Runnable |
+| Function retrieval | enzyme name or EC to reviewed sequences | UniProtKB REST | Runnable |
 | Reaction data | Rhea, EnzymeMap, M-CSA | versioned loaders with checksums | Runnable |
 | Sequence | high-throughput alignment | MMseqs2 | Runnable when database is configured |
 | Sequence | HMM/profile retrieval | phmmer, HHsearch | Guarded wrapper |
@@ -19,6 +20,7 @@ Status meanings:
 | Active site | catalytic geometry and ligand/metal analysis | built-in geometry providers | Runnable |
 | Pocket | detection and local comparison | fpocket, P2Rank, PocketMatch | Guarded wrapper |
 | Function | EC, catalytic site, specificity, kinetics, pH, stability, solubility | Functional Prediction Registry V1 | Adapter |
+| Function planning | pH and activity/kinetics evidence | EpHod, OphPred, CataPro, UniKP, TurNuP | Guarded; omitted from executable DAG until assets and handlers are ready |
 | Structure prediction | monomer, complex and ligand-aware prediction | Boltz-2, AlphaFold 3, ESMFold | Guarded wrapper |
 | Engineering | sequence redesign and scoring | LigandMPNN/ProteinMPNN | Guarded wrapper |
 | Engineering | mutation prediction | unZipro, FoldX, GeoStab, ThermoMPNN | Guarded wrapper / Adapter |

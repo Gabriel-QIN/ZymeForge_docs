@@ -27,3 +27,7 @@ The reaction test uses BHET mono-hydrolysis as a PET-hydrolysis surrogate and EC
 - substrate compatibility, kinetics, pH, thermostability, solubility, developability, and sequence diversity as ranking evidence.
 
 An unavailable predictor contributes missing evidence, never a generated placeholder score. The PET sequence-expansion result therefore does **not** support a new PETase claim; the successful result is recovery of known reaction- and EC-linked enzymes.
+
+A reviewed IsPETase reference (`A0A0K8P6T7`, 290 aa, *Piscinibacter
+sakaiensis*) is distributed in the main repository under `data/references/` with
+its UniProt provenance and complete signal-peptide-containing sequence.

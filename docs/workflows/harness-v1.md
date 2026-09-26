@@ -36,7 +36,15 @@ zymeforge harness context --output planning_context.json
 Every `PlanStep` may contain validated `preferred_tools`. A provider must be
 registered for that capability, and all parameters remain allowlisted. When no
 provider is requested explicitly, the deterministic router prefers healthy
-routes. Missing user inputs and missing server assets are recorded separately.
+routes. Inputs required to start, optional clarifications, and missing server
+assets are recorded separately. Unavailable providers are omitted from the
+executable DAG so preliminary retrieval can still run without fabricated scores.
+
+Function-first requests are supported through the reviewed UniProt REST search.
+For example, “I need a high-activity reverse transcriptase at pH 6–8” can begin
+with name/EC sequence retrieval and preliminary ranking. EpHod/OphPred and
+CataPro/UniKP/TurNuP remain explicit missing evidence until their official model
+assets and handlers are configured.
 
 ## What the LLM can do
 
