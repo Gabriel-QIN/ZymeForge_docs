@@ -85,6 +85,21 @@ zymeforge harness benchmark --validate-only
 zymeforge harness benchmark
 ```
 
+An OpenAI-compatible relay may be used by setting its base URL and an exact
+model name exposed by that service:
+
+```bash
+export OPENAI_API_KEY=...
+export OPENAI_BASE_URL=https://relay.example/v1
+export ZYMEFORGE_LLM_MODEL=relay-model-name
+```
+
+Harness tries Responses Structured Outputs first. For relays that reject open
+scientific metadata objects in a strict JSON Schema, it falls back to Chat
+Completions JSON Object mode. Every result is still checked by Pydantic and the
+local Registry/DAG validator, with at most one repair attempt. Invalid provider
+names, parameters, inputs or dependencies are not executed.
+
 The preflight validates all 50 definitions and current environment readiness
 without an LLM. The live benchmark requires `OPENAI_API_KEY`; missing credentials
 produce an explicit error, never placeholder scores.
