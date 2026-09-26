@@ -71,7 +71,19 @@ Public model assets default to `/mnt/data2/model_hub/zymeforge`:
 zymeforge model-hub list
 zymeforge model-hub download --models esm2_t33_650m,saprot_650m_af2,protrek_650m
 zymeforge model-hub verify
+zymeforge model-hub status
 ```
+
+Download every public catalog asset and check configured databases in one pass:
+
+```bash
+bash scripts/download_assets.sh all
+ZYMEFORGE_DATABASE_IDS=uniref90 bash scripts/download_assets.sh databases
+```
+
+`downloaded` does not imply `runtime_ready`: some upstream repositories still
+require a model-specific inference handler or retrieval index. Restricted
+weights are never obtained by bypassing upstream terms.
 
 The hub distinguishes natively runnable providers, adapter-ready assets, and registered-only
 models. Restricted parameters are never fetched by bypassing upstream license terms.

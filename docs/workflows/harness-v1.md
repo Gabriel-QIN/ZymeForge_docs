@@ -43,8 +43,9 @@ executable DAG so preliminary retrieval can still run without fabricated scores.
 Function-first requests are supported through the reviewed UniProt REST search.
 For example, “I need a high-activity reverse transcriptase at pH 6–8” can begin
 with name/EC sequence retrieval and preliminary ranking. EpHod/OphPred and
-CataPro/UniKP/TurNuP remain explicit missing evidence until their official model
-assets and handlers are configured.
+CataPro/UniKP/TurNuP remain explicit missing evidence until their
+provider-specific inference handlers are configured. A downloaded model
+repository alone does not make a provider executable.
 
 ## What the LLM can do
 
@@ -85,13 +86,20 @@ Each run produces `run.json`, `agent_request.json`, `planning_context.json`,
 
 ## CLI
 
+`agent` is the natural-language-facing alias for the same Harness application:
+
 ```bash
 export OPENAI_API_KEY=...
-zymeforge harness plan "Find remote PETases below 30% identity"
-zymeforge harness run "Find remote PETases below 30% identity"
+zymeforge agent tools
+zymeforge agent plan "Find remote PETases below 30% identity" --top-k 100 --top-n 20
+zymeforge agent run "Find remote PETases below 30% identity"
 zymeforge harness benchmark --validate-only
 zymeforge harness benchmark
 ```
+
+The LLM is only a compiler from natural language to `AgentRequest`. It cannot
+execute shell commands: execution is constrained to healthy Registry tools and
+allowlisted parameters.
 
 An OpenAI-compatible relay may be used by setting its base URL and an exact
 model name exposed by that service:
@@ -115,8 +123,38 @@ produce an explicit error, never placeholder scores.
 An existing request can be executed without another model call:
 
 ```bash
-zymeforge harness run "PETase discovery" --request-file agent_request.json
+zymeforge harness run --request-file agent_request.json
 ```
+
+## Fully custom CLI, without an LLM
+
+CLI composition emits the exact same `AgentRequest` contract and uses the same
+validator, deterministic router, Registry tools, and runtime:
+
+```bash
+zymeforge harness compose \
+  --target 'enzyme=reverse transcriptase' \
+  --constraint 'pH.minimum=6' --constraint 'pH.maximum=8' \
+  --objective 'retrieve reviewed reverse transcriptases' \
+  --step 'retrieve:function_search:uniprot_function_search' \
+  --step-param retrieve.top_k=100 \
+  --step 'rank:candidate_ranking:zymescore:retrieve' \
+  --step-param rank.top_n=20 \
+  --output top_n=20 \
+  --request-output rt-request.json
+
+zymeforge harness run --request-file rt-request.json --dry-run
+zymeforge harness run --request-file rt-request.json
+```
+
+`--target`, `--constraint`, `--step`, and `--step-param` are repeatable. Dotted
+keys create nested values, and JSON scalars/arrays/objects are parsed. Use
+`--database NAME` to apply a configured database to compatible search steps.
+
+`top_k` controls the retrieval pool; `top_n` controls the final retained pool.
+Both are upper bounds. The checked PET plan requests 25 final proteins but
+currently yields 10 unique reviewed/local candidates after union and
+deduplication. The checked RT plan explicitly retains 20 candidates.
 
 ## Runnable RT and PET examples
 
