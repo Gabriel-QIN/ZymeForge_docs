@@ -118,6 +118,35 @@ An existing request can be executed without another model call:
 zymeforge harness run "PETase discovery" --request-file agent_request.json
 ```
 
+## Runnable RT and PET examples
+
+The main repository includes checked `AgentRequest` files, so the complete
+retrieval examples can run without an LLM API:
+
+```bash
+bash examples/harness/run_validated_example.sh pet
+bash examples/harness/run_validated_example.sh rt
+```
+
+Both commands print a run directory under `runs/harness_examples/`. Its
+`candidates.csv` contains identifiers and complete UniProt sequences, while
+`planning_context.json`, `resolved_plan.json`, and `provenance.json` explain how
+the result was produced.
+
+To compile the same objectives from natural language:
+
+```bash
+export OPENAI_API_KEY='...'
+export OPENAI_BASE_URL='https://your-compatible-api.example/v1'
+export ZYMEFORGE_LLM_MODEL='GPT-6-Sol'
+
+bash examples/harness/run_from_natural_language.sh pet
+bash examples/harness/run_from_natural_language.sh rt
+```
+
+Generated plans and run artifacts remain below the Git-ignored `runs/`
+directory. Credentials are read only from the process environment.
+
 ## API
 
 Compile a request:
