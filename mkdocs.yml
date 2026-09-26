@@ -52,7 +52,7 @@ nav:
       - Current architecture: development/CURRENT_ARCHITECTURE.md
       - Capability matrix: development/CAPABILITY_MATRIX.md
   - Workflows:
-      - Harness V1: workflows/harness-v1.md
+      - Harness V2: workflows/harness-v1.md
       - Reaction-to-enzyme mining: workflows/reaction-mining.md
       - Protein similarity retrieval: workflows/similarity-retrieval.md
       - RT and PET validation: workflows/mining-validation.md

@@ -24,7 +24,7 @@ Status meanings:
 | Engineering | mutation prediction | unZipro, FoldX, GeoStab, ThermoMPNN | Guarded wrapper / Adapter |
 | Fusion | weighted ZymeScore and rank fusion | weighted fusion, RRF | Runnable |
 | Fusion | calibration and learned/multi-objective ranking | Platt, isotonic, logistic, Pareto | Runnable |
-| Runtime | constrained plan execution and artifacts | Harness V1 | Runnable |
+| Runtime | environment-aware constrained planning and artifacts | Harness V2 + PlanningContext | Runnable; live compiler requires configured Structured Output credentials |
 | Operations | dependency/asset/license/handler status | tool health API and CLI | Runnable |
 | Benchmarking | retrieval, reaction and fusion definitions | versioned manifests | Runnable definitions; no claimed results |
 

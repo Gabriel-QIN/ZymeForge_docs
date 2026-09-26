@@ -1,10 +1,13 @@
-# Harness V1
+# Harness V2
 
-Harness V1 turns a natural-language scientific request into a reproducible
+Harness V2 turns a natural-language scientific request into a reproducible,
+environment-aware
 ZymeForge workflow without giving an LLM shell or server access.
 
 ```text
 Natural language
+    ↓
+live PlanningContext
     ↓
 LLM Structured Output
     ↓
@@ -19,6 +22,22 @@ registered ZymeForge tools
 Candidate records + provenance
 ```
 
+## PlanningContext
+
+Before compilation, ZymeForge snapshots the state of the current installation.
+The planner receives registered model/tool IDs and versions, input requirements,
+output contracts, allowlisted parameter ranges, relative cost, CPU/GPU needs,
+database metadata, and live binary/checkpoint/database/license/handler health.
+
+```bash
+zymeforge harness context --output planning_context.json
+```
+
+Every `PlanStep` may contain validated `preferred_tools`. A provider must be
+registered for that capability, and all parameters remain allowlisted. When no
+provider is requested explicitly, the deterministic router prefers healthy
+routes. Missing user inputs and missing server assets are recorded separately.
+
 ## What the LLM can do
 
 The compiler may identify the task, target, constraints, objectives, output
@@ -27,8 +46,9 @@ Pydantic Structured Output object.
 
 It cannot choose executables, invent tool names, provide arbitrary model flags,
 run shell commands, install dependencies, or change a plan during execution.
-Provider selection, defaults, parameter allowlists, fixed fallbacks, and
-availability checks come from the server-owned Tool Registry.
+It can select registered provider IDs; defaults, parameter allowlists, fixed
+fallbacks, and availability checks remain controlled by the server-owned Tool
+Registry.
 
 ## Supported task families
 
@@ -39,19 +59,21 @@ availability checks come from the server-owned Tool Registry.
 - mutation prediction;
 - sequence redesign.
 
-The included 50-task benchmark measures schema validity, task classification,
-constraint extraction, capability selection, missing-input detection, and plan
-validity.
+The included 50-task benchmark contains realistic reverse-transcriptase sequence
+mining and PET/BHET reaction-mining cases. It measures schema, task, target,
+constraint, capability and provider accuracy, PlanningContext usage,
+missing-input detection, environment awareness, readiness and plan validity.
 
 ## Execution states
 
 Runs use `PENDING`, `RUNNING`, `COMPLETED`, `FAILED`, and
 `WAITING_FOR_INPUT`. If required scientific input is absent, the request enters
-`WAITING_FOR_INPUT` before any expensive provider starts. Harness V1 stops after
+`WAITING_FOR_INPUT` before any expensive provider starts. Harness V2 stops after
 a failed step and never asks an LLM to replan.
 
-Each run produces `run.json`, `agent_request.json`, `resolved_plan.json`,
-per-tool results, `candidates.csv`, `provenance.json`, and `report.html`.
+Each run produces `run.json`, `agent_request.json`, `planning_context.json`,
+`resolved_plan.json`, per-tool results, `candidates.csv`, `provenance.json`, and
+`report.html`.
 
 ## CLI
 
@@ -59,8 +81,13 @@ per-tool results, `candidates.csv`, `provenance.json`, and `report.html`.
 export OPENAI_API_KEY=...
 zymeforge harness plan "Find remote PETases below 30% identity"
 zymeforge harness run "Find remote PETases below 30% identity"
+zymeforge harness benchmark --validate-only
 zymeforge harness benchmark
 ```
+
+The preflight validates all 50 definitions and current environment readiness
+without an LLM. The live benchmark requires `OPENAI_API_KEY`; missing credentials
+produce an explicit error, never placeholder scores.
 
 An existing request can be executed without another model call:
 
@@ -98,8 +125,8 @@ ZymePage exposes an interactive Harness view at `/harness`. External indexes,
 checkpoints, databases, and source directories are configured only on the
 server. Client-supplied server filesystem paths are rejected.
 
-## V1 boundary
+## V2 boundary
 
-Harness V1 does not implement reflection, critic loops, multi-agent execution,
+Harness V2 does not implement reflection, critic loops, multi-agent execution,
 autonomous installation, persistent scientific memory, or observe-and-replan.
 Those behaviors are intentionally outside this release.
